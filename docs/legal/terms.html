@@ -1,0 +1,1879 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BAGUET v1.0.0 // TERMOS DE USO &amp; LICENÇA</title>
+  <meta name="description" content="Termos de Uso, Licença de Software BUSL-1.1 AND MIT, Garantia de Zero Vendor Lock-in e Software Copyright ancorado no Bitcoin via OpenTimestamps.">
+  <link rel="icon" type="image/png" href="../studio/baguet-favicon-white-512.png">
+
+  <!-- 
+    BAGUET v1.0.0 — OFFICIAL TECHNICAL SPECIFICATION & PROJECT DOCUMENT
+    Art Direction: Kunsthalle Basel × Dieter Rams (Braun 1965)
+    Aesthetic: Contemporary Swiss Exhibition Catalog Sheet & Physical Laboratory Instrument
+    Design Rules: 
+      - 100% Offline / Air-Gapped Ready
+      - Zero Emojis in HTML/CSS/JS
+      - Strict 0px Border-Radius everywhere (border-radius: 0px !important)
+      - Zero Neon Glow / Zero Glassmorphism Blur / Zero Cyberpunk
+      - High Legibility Monospace & Architectural Typography
+      - Standard Universal Headings, Code Delimiters & Semantic Markup
+  -->
+
+  <style>
+    /* ==========================================================================
+       1. DESIGN TOKENS KUNSTHALLE BASEL × DIETER RAMS (BRAUN 1965)
+       ========================================================================== */
+    :root {
+      --bg-museum: #F6F5F0;       /* Papel algodão arquitetônico cru — 60%+ espaço negativo */
+      --bg-plinth: #EFECE6;       /* Pedestal de pedra calcária / bancada de laboratório */
+      --bg-card: #FFFFFF;         /* Ficha catalográfica / chassi branco puro */
+      --bg-terminal: #0A0A0A;     /* Alumínio anodizado preto / console de comando */
+      --ink-primary: #0A0A0A;     /* Tinta preta litográfica profunda */
+      --ink-muted: #6E6D68;       /* Grafite técnico curatorial */
+      --accent-swiss: #D92B2B;    /* Vermelho Internacional Suíço cirúrgico */
+      --accent-crypto: #14213D;   /* Azul Marinho Criptográfico (Ed25519 / AES-256-SIV) */
+      --accent-green: #2E7D32;    /* Verde militar de verificação pericial */
+      
+      --hairline: 1px solid var(--ink-primary);
+      --hairline-subtle: 1px solid rgba(10, 10, 10, 0.15);
+      --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Berkeley Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+      
+      --header-h: 52px;
+      --sidebar-w: 320px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      border-radius: 0px !important; /* REGRA CAPITAL: ZERO BORDAS ARREDONDADAS */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent-swiss) !important;
+      outline-offset: 1px !important;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-museum);
+      color: var(--ink-primary);
+    }
+
+    body {
+      background-color: var(--bg-museum);
+      color: var(--ink-primary);
+      font-family: var(--font-display);
+      font-size: 14.5px;
+      line-height: 1.65;
+      letter-spacing: -0.01em;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    ::selection {
+      background: var(--accent-swiss);
+      color: #FFFFFF;
+    }
+
+    /* Tipografia e Numerais Tabulares */
+    .mono {
+      font-family: var(--font-mono);
+      font-feature-settings: "tnum" 1, "zero" 1;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+
+    .swiss-red { color: var(--accent-swiss); }
+    .crypto-blue { color: var(--accent-crypto); }
+    .text-muted { color: var(--ink-muted); }
+    .uppercase { text-transform: uppercase; }
+
+    /* Hachuras Suíças 45 Graus */
+    .hatch-45 {
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(10, 10, 10, 0.05),
+        rgba(10, 10, 10, 0.05) 1px,
+        transparent 1px,
+        transparent 5px
+      );
+    }
+
+    .hatch-red-45 {
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(217, 43, 43, 0.12),
+        rgba(217, 43, 43, 0.12) 1px,
+        transparent 1px,
+        transparent 5px
+      );
+    }
+
+    /* Miras de Registro Tipográfico (+) */
+    .reg-mark {
+      position: relative;
+    }
+    .reg-mark::before, .reg-mark::after {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent-swiss);
+      line-height: 1;
+      width: 14px;
+      height: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .reg-mark.top-left::before { content: "+"; top: -1px; left: -1px; transform: translate(-50%, -50%); }
+    .reg-mark.top-right::after { content: "+"; top: -1px; right: -1px; transform: translate(50%, -50%); }
+    .reg-mark.bottom-left::before { content: "+"; bottom: -1px; left: -1px; transform: translate(-50%, 50%); }
+    .reg-mark.bottom-right::after { content: "+"; bottom: -1px; right: -1px; transform: translate(50%, 50%); }
+
+    
+    
+    /* ==========================================================================
+       TABS DE ALTERNÂNCIA DE DOCUMENTOS & CABEÇALHO SUPERIOR MONUMENTAL
+       ALINHADO VERTICALMENTE COM O SIDEBAR (WIDTH: VAR(--SIDEBAR-W))
+       ========================================================================== */
+    .doc-topbar {
+      position: sticky;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: var(--header-h);
+      background-color: var(--bg-museum);
+      border-bottom: var(--hairline);
+      z-index: 1000;
+      display: flex;
+      align-items: stretch;
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    .topbar-cell {
+      display: flex;
+      align-items: center;
+    }
+
+    /* Caixa da logo com largura idêntica ao sidebar (320px) para alinhamento vertical absoluto */
+    .topbar-brand {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      max-width: var(--sidebar-w);
+      height: 100%;
+      box-sizing: border-box;
+      border-right: var(--hairline);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      background: var(--bg-museum);
+    }
+
+    .topbar-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border: 1px solid var(--accent-swiss);
+      background: var(--accent-swiss);
+      color: #FFF;
+      letter-spacing: 0.05em;
+    }
+
+    /* Tabs de Alternância de Documentos - Sem borda esquerda duplicada e sem margem */
+    .topbar-doc-tabs {
+      display: flex;
+      align-items: stretch;
+      margin: 0;
+      padding: 0;
+      border-left: none; /* ELIMINA LINHA DIVISÓRIA DUPLICADA */
+    }
+
+    .topbar-doc-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 20px;
+      background: transparent;
+      border: none;
+      border-right: var(--hairline);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--ink-muted);
+      cursor: pointer;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: all 0.12s ease;
+      white-space: nowrap;
+    }
+
+    .topbar-doc-tab:hover {
+      background: var(--bg-plinth);
+      color: var(--ink-primary);
+    }
+
+    .topbar-doc-tab.active {
+      background: #FFFFFF;
+      color: var(--ink-primary);
+      box-shadow: inset 0 -2px 0 var(--accent-swiss);
+    }
+
+    /* Espaçador neutro que preenche o vão central até as ações da direita */
+    .topbar-status-spacer {
+      flex: 1;
+      height: 100%;
+      border-right: var(--hairline);
+      background: transparent;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: stretch;
+    }
+
+    .topbar-btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      background: transparent;
+      border: none;
+      border-right: var(--hairline);
+      padding: 0 16px;
+      cursor: pointer;
+      color: var(--ink-primary);
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.12s ease;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .topbar-btn:hover {
+      background: var(--bg-plinth);
+      color: var(--accent-swiss);
+    }
+
+    .topbar-btn:last-child {
+      border-right: none;
+    }
+
+    @media (max-width: 960px) {
+      .topbar-brand {
+        width: auto;
+        min-width: 0;
+        max-width: none;
+        padding: 0 12px;
+      }
+      .topbar-status-spacer {
+        display: none;
+      }
+      .topbar-doc-tab {
+        padding: 0 10px;
+        font-size: 10px;
+      }
+      .topbar-btn {
+        padding: 0 10px;
+        font-size: 10px;
+      }
+    }
+
+
+    /* ==========================================================================
+       3. ESTRUTURA GERAL (LAYOUT DE 2 COLUNAS: ÍNDICE CURATORIAL + ARTIGO)
+       ========================================================================== */
+    .doc-container {
+      display: flex;
+      min-height: calc(100vh - var(--header-h));
+      position: relative;
+    }
+
+    /* Barra Lateral Esquerda: Índice Curatorial Kunsthalle */
+    .doc-sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      border-right: var(--hairline);
+      background: var(--bg-museum);
+      position: sticky;
+      top: var(--header-h);
+      height: calc(100vh - var(--header-h));
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .sidebar-header {
+      padding: 16px 18px;
+      border-bottom: var(--hairline);
+      background: var(--bg-plinth);
+    }
+
+    .sidebar-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--ink-primary);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sidebar-search {
+      margin-top: 10px;
+      position: relative;
+    }
+
+    .sidebar-input {
+      width: 100%;
+      border: 1px solid var(--ink-primary);
+      background: #FFFFFF;
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-primary);
+      outline: none;
+    }
+
+    .sidebar-input:focus {
+      border-color: var(--accent-swiss);
+    }
+
+    .sidebar-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .nav-item {
+      border-bottom: var(--hairline-subtle);
+    }
+
+    .nav-link {
+      display: block;
+      padding: 10px 18px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.4;
+      color: var(--ink-muted);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: all 0.12s ease;
+    }
+
+    .nav-link:hover {
+      background: var(--bg-plinth);
+      color: var(--ink-primary);
+      border-left-color: var(--ink-primary);
+    }
+
+    .nav-link.active {
+      background: #FFFFFF;
+      color: var(--accent-swiss);
+      font-weight: 700;
+      border-left-color: var(--accent-swiss);
+    }
+
+    .nav-code {
+      display: inline-block;
+      font-size: 10px;
+      color: var(--accent-swiss);
+      margin-right: 6px;
+      font-weight: 700;
+    }
+
+    .sidebar-footer {
+      padding: 14px 18px;
+      border-top: var(--hairline);
+      background: var(--bg-plinth);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      line-height: 1.5;
+      color: var(--ink-muted);
+    }
+
+    /* Área Principal de Leitura */
+    .doc-main {
+      flex: 1;
+      padding: 48px 64px 120px;
+      max-width: 1120px;
+      margin: 0 auto;
+      background: var(--bg-museum);
+    }
+
+    /* ==========================================================================
+       4. PLINTO MONUMENTAL DA FICHA CATALOGRÁFICA (INTRODUÇÃO)
+       ========================================================================== */
+    .catalog-monumental-card {
+      border: var(--hairline);
+      background: var(--bg-card);
+      padding: 42px;
+      margin-bottom: 56px;
+      position: relative;
+    }
+
+    .catalog-supertitle {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--accent-swiss);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .catalog-title {
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 18px;
+      color: var(--ink-primary);
+    }
+
+    .catalog-subline {
+      font-size: 17px;
+      line-height: 1.55;
+      color: var(--ink-muted);
+      margin-bottom: 28px;
+      max-width: 900px;
+    }
+
+    /* Grade Curatorial de Metadados da Ficha */
+    .catalog-metadata-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1px;
+      background: var(--ink-primary);
+      border: var(--hairline);
+      margin: 28px 0;
+    }
+
+    .metadata-cell {
+      background: var(--bg-card);
+      padding: 14px 18px;
+    }
+
+    .metadata-label {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .metadata-value {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--ink-primary);
+    }
+
+    /* Callout de Resumo de 3 Segundos */
+    .summary-box-3sec {
+      border: 1px solid var(--ink-primary);
+      background: var(--bg-plinth);
+      padding: 24px;
+      margin: 28px 0;
+      position: relative;
+    }
+
+    .summary-box-header {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-swiss);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .summary-box-content {
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--ink-primary);
+    }
+
+    /* Faixa de Links Oficiais */
+    .official-links-ribbon {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: var(--hairline-subtle);
+    }
+
+    .official-link-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      background: var(--bg-plinth);
+      border: 1px solid var(--ink-primary);
+      padding: 8px 14px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.12s ease;
+    }
+
+    .official-link-pill:hover {
+      background: var(--ink-primary);
+      color: #FFFFFF;
+    }
+
+    /* ==========================================================================
+       5. PLACAS DE SEÇÃO CATALOGRÁFICA (SECTION PLATES)
+       ========================================================================== */
+    .doc-section {
+      margin-top: 72px;
+      padding-top: 36px;
+      border-top: var(--hairline);
+    }
+
+    .section-plate-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--ink-primary);
+      padding-bottom: 12px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .section-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--accent-swiss);
+      text-transform: uppercase;
+    }
+
+    h2.section-heading {
+      font-size: 27px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink-primary);
+      margin-top: 4px;
+    }
+
+    .section-acc-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-muted);
+      letter-spacing: 0.05em;
+    }
+
+    h3.subsection-heading {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--ink-primary);
+      margin: 36px 0 16px;
+      padding-left: 12px;
+      border-left: 3px solid var(--accent-swiss);
+    }
+
+    h4.tertiary-heading {
+      font-size: 15px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--ink-primary);
+      margin: 24px 0 12px;
+    }
+
+    p {
+      margin-bottom: 16px;
+      color: var(--ink-primary);
+    }
+
+    ul, ol {
+      margin: 0 0 20px 24px;
+      color: var(--ink-primary);
+    }
+
+    li {
+      margin-bottom: 8px;
+      line-height: 1.55;
+    }
+
+    /* Listas Customizadas Tipo Catálogo */
+    .catalog-list {
+      list-style: none;
+      margin: 20px 0;
+      padding: 0;
+      border: var(--hairline);
+      background: var(--bg-card);
+    }
+
+    .catalog-list-item {
+      padding: 14px 20px;
+      border-bottom: var(--hairline-subtle);
+      display: flex;
+      gap: 16px;
+    }
+
+    .catalog-list-item:last-child {
+      border-bottom: none;
+    }
+
+    .catalog-item-bullet {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-swiss);
+      min-width: 24px;
+    }
+
+    /* ==========================================================================
+       6. CONSOLES DE TERMINAL & BLOCOS DE CÓDIGO (DIETER RAMS BRAUN CHASSIS)
+       ========================================================================== */
+    .terminal-chassis {
+      border: var(--hairline);
+      background: var(--bg-terminal);
+      color: #EFECE6;
+      margin: 24px 0 28px;
+      position: relative;
+    }
+
+    .terminal-bezel {
+      background: #141414;
+      border-bottom: 1px solid #282828;
+      padding: 9px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #9E9D98;
+    }
+
+    .terminal-bezel-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .terminal-indicator {
+      width: 8px;
+      height: 8px;
+      border: 1px solid #FFF;
+      background: var(--accent-swiss);
+      display: inline-block;
+    }
+
+    .terminal-bezel-tag {
+      font-weight: 700;
+      color: #FFF;
+      letter-spacing: 0.05em;
+    }
+
+    .terminal-lang-badge {
+      font-size: 9.5px;
+      padding: 1px 6px;
+      border: 1px solid #444;
+      background: #1F1F1F;
+      color: #AAA;
+      text-transform: uppercase;
+    }
+
+    .terminal-copy-btn {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      background: #242424;
+      color: #FFF;
+      border: 1px solid #444;
+      padding: 4px 10px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.12s ease;
+    }
+
+    .terminal-copy-btn:hover {
+      background: var(--accent-swiss);
+      border-color: var(--accent-swiss);
+    }
+
+    pre.code-block {
+      margin: 0;
+      padding: 18px 20px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.6;
+      tab-size: 4;
+      color: #E5E7EB;
+      white-space: pre;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+
+    /* Código em linha */
+    p code, li code, td code {
+      background: var(--bg-plinth);
+      color: var(--ink-primary);
+      border: 1px solid rgba(10, 10, 10, 0.2);
+      padding: 2px 5px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Tokens de Realce Sintático Limpos */
+    .tok-kw { color: #F87171; font-weight: 700; }        /* Palavras-chave / def / import */
+    .tok-fn { color: #60A5FA; }                         /* Funções / métodos */
+    .tok-str { color: #FCD34D; }                        /* Strings / literais */
+    .tok-cm { color: #78716C; font-style: italic; }     /* Comentários */
+    .tok-num { color: #A78BFA; }                        /* Números */
+    .tok-cls { color: #34D399; font-weight: 700; }      /* Classes / tipos */
+
+    /* ==========================================================================
+       7. TABELAS EDITORIAIS SUÍÇAS (.SWISS-TABLE)
+       ========================================================================== */
+    .table-responsive-frame {
+      border: var(--hairline);
+      background: #FFFFFF;
+      overflow-x: auto;
+      margin: 24px 0 28px;
+    }
+
+    .swiss-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .swiss-table th {
+      background: var(--bg-plinth);
+      border-bottom: var(--hairline);
+      border-right: var(--hairline-subtle);
+      padding: 12px 16px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      color: var(--ink-primary);
+    }
+
+    .swiss-table td {
+      border-bottom: var(--hairline-subtle);
+      border-right: var(--hairline-subtle);
+      padding: 13px 16px;
+      line-height: 1.45;
+      color: var(--ink-primary);
+    }
+
+    .swiss-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .swiss-table th:last-child, .swiss-table td:last-child {
+      border-right: none;
+    }
+
+    .swiss-table tr:hover td {
+      background: rgba(10, 10, 10, 0.02);
+    }
+
+    .td-highlight {
+      background: rgba(217, 43, 43, 0.06);
+      font-weight: 700;
+      color: var(--accent-swiss);
+    }
+
+    .td-center {
+      text-align: center;
+    }
+
+    /* ==========================================================================
+       8. PLACAS DE ADVERTÊNCIA, NOTA & DECLARAÇÃO (LABORATORY PLATES)
+       ========================================================================== */
+    .lab-plate {
+      border: var(--hairline);
+      background: var(--bg-card);
+      padding: 20px 24px;
+      margin: 24px 0;
+      position: relative;
+    }
+
+    .lab-plate-note {
+      border-left: 4px solid var(--ink-primary);
+      background: var(--bg-plinth);
+    }
+
+    .lab-plate-warning {
+      border-left: 4px solid var(--accent-swiss);
+      background: #FFF;
+    }
+
+    .lab-plate-crypto {
+      border-left: 4px solid var(--accent-crypto);
+      background: #FFF;
+    }
+
+    .lab-plate-header {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lab-plate-tag {
+      padding: 2px 6px;
+      background: var(--ink-primary);
+      color: #FFF;
+      font-size: 9px;
+    }
+
+    .lab-plate-tag.red {
+      background: var(--accent-swiss);
+    }
+
+    .lab-plate-tag.blue {
+      background: var(--accent-crypto);
+    }
+
+    .lab-plate-content {
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+
+    /* Bloco reservado para texto jurídico */
+    .legal-reserved-block {
+      border: 1px dashed var(--ink-primary);
+      background: var(--bg-plinth);
+      padding: 20px;
+      margin: 20px 0;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.6;
+      color: var(--ink-primary);
+    }
+
+    /* ==========================================================================
+       9. DIAGRAMAS E INSTRUMENTOS GRÁFICOS PROPRIETÁRIOS
+       ========================================================================== */
+    .diagram-instrument-frame {
+      border: var(--hairline);
+      background: #FFFFFF;
+      padding: 28px;
+      margin: 28px 0;
+      position: relative;
+    }
+
+    .diagram-bezel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: var(--hairline);
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+
+    .diagram-title {
+      font-weight: 700;
+      color: var(--ink-primary);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* Régua Comparativa Dieter Rams 1:1 */
+    .comparative-ruler-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    .ruler-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .ruler-label-bar {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .ruler-track {
+      height: 28px;
+      background: var(--bg-plinth);
+      border: 1px solid var(--ink-primary);
+      position: relative;
+      display: flex;
+      align-items: stretch;
+    }
+
+    .ruler-fill {
+      background: var(--ink-primary);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .ruler-fill.swiss {
+      background: var(--accent-swiss);
+    }
+
+    .ruler-fill.hatch {
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(10, 10, 10, 0.12),
+        rgba(10, 10, 10, 0.12) 2px,
+        transparent 2px,
+        transparent 6px
+      );
+      color: var(--ink-muted);
+    }
+
+    .ruler-val {
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--ink-muted);
+      white-space: nowrap;
+      z-index: 1;
+    }
+
+    .ruler-ticks {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background-image: repeating-linear-gradient(
+        90deg,
+        rgba(10, 10, 10, 0.2) 0px,
+        rgba(10, 10, 10, 0.2) 1px,
+        transparent 1px,
+        transparent 10%
+      );
+    }
+
+    /* Diagrama ASCII / Esquemático Formatado */
+    .ascii-schematic-box {
+      border: 1px solid var(--ink-primary);
+      background: #FFFFFF;
+      padding: 20px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.45;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--ink-primary);
+    }
+
+    /* ==========================================================================
+       10. ELEMENTOS INTERATIVOS DO STUDIO E DIETER RAMS SWITCHES
+       ========================================================================== */
+    .hall-spec-card {
+      border: var(--hairline);
+      background: #FFFFFF;
+      margin: 20px 0;
+      padding: 24px;
+    }
+
+    .hall-spec-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: var(--hairline-subtle);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .hall-num {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent-swiss);
+    }
+
+    .hall-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .hall-steps {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .hall-step-item {
+      display: flex;
+      gap: 14px;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+
+    .hall-step-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--bg-plinth);
+      border: 1px solid var(--ink-primary);
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Botão Voltar ao Topo */
+    .back-to-top-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 28px;
+      background: var(--ink-primary);
+      color: #FFFFFF;
+      border: 1px solid var(--ink-primary);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 10px 16px;
+      cursor: pointer;
+      z-index: 999;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      box-shadow: 4px 4px 0px rgba(10, 10, 10, 0.2);
+    }
+
+    .back-to-top-btn:hover {
+      background: var(--accent-swiss);
+      border-color: var(--accent-swiss);
+    }
+
+    /* Notificação Toast Flutuante */
+    .toast-indicator {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink-primary);
+      color: #FFFFFF;
+      border: 1px solid var(--accent-swiss);
+      padding: 8px 18px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      z-index: 2000;
+      display: none;
+    }
+
+    /* ==========================================================================
+       11. RESPONSIVIDADE E MEDIA QUERIES
+       ========================================================================== */
+    @media (max-width: 960px) {
+      .doc-sidebar {
+        display: none;
+      }
+      .doc-main {
+        padding: 32px 20px 80px;
+      }
+      .catalog-monumental-card {
+        padding: 24px;
+      }
+      .catalog-title {
+        font-size: 28px;
+      }
+      .topbar-status {
+        display: none;
+      }
+    }
+  </style>
+
+</head>
+<body>
+
+  <header class="doc-topbar">
+    <div class="topbar-brand">
+      <span>BAGUET // SYSTEM SPEC</span>
+      <span class="topbar-badge">[v1.0.0]</span>
+    </div>
+
+        <!-- TABS DE NAVEGAÇÃO ENTRE DOCUMENTOS (ALINHADAS AO SIDEBAR) -->
+    <nav class="topbar-doc-tabs" aria-label="Navegação entre documentos">
+      <a href="guide.html" class="topbar-doc-tab " id="tab-guide">
+        <span class="mono swiss-red">[01]</span>
+        <span>GUIA TÉCNICO</span>
+      </a>
+      <a href="terms.html" class="topbar-doc-tab active" id="tab-terms">
+        <span class="mono swiss-red">[02]</span>
+        <span>TERMOS &amp; LICENÇA</span>
+      </a>
+      <a href="privacy.html" class="topbar-doc-tab " id="tab-privacy">
+        <span class="mono swiss-red">[03]</span>
+        <span>PRIVACIDADE</span>
+      </a>
+      <a href="litepaper.html" class="topbar-doc-tab " id="tab-litepaper">
+        <span class="mono swiss-red">[04]</span>
+        <span>LITEPAPER</span>
+      </a>
+    </nav>
+
+    <!-- ESPAÇADOR NEUTRO (SEM TEXTO DE STATUS CONFORME ESPECIFICAÇÃO) -->
+    <div class="topbar-status-spacer"></div>
+
+    <div class="topbar-actions">
+      <a href="https://github.com/soilore/baguet" target="_blank" rel="noopener" class="topbar-btn">
+        [REPO GITHUB]
+      </a>
+      <a href="https://baguet.soilore.com" target="_blank" rel="noopener" class="topbar-btn">
+        [PORTAL WEB]
+      </a>
+      <button class="topbar-btn" onclick="window.print()">
+        [DOWNLOAD]
+      </button>
+    </div>
+  </header>
+
+  <div class="doc-container">
+    <aside class="doc-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">
+          <span>CATALOG INDEX</span>
+          <span class="mono swiss-red">[12 ARTIGOS]</span>
+        </div>
+        <div class="sidebar-search">
+          <input type="text" id="sidebar-filter-input" class="sidebar-input mono" placeholder="FILTRAR TERMOS &amp; LICENÇA..." oninput="filterSidebarIndex()">
+        </div>
+      </div>
+
+      <ul class="sidebar-nav" id="sidebar-nav-list">
+        
+        <li class="nav-item">
+          <a href="#introducao" class="nav-link active">
+            <span class="nav-code">[00]</span> Visão Geral &amp; Resumo
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#objeto-escopo" class="nav-link">
+            <span class="nav-code">[01]</span> Objeto &amp; Concessão
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#modalidades-cotas" class="nav-link">
+            <span class="nav-code">[02]</span> Modalidades &amp; Tributos
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#titularidade-dados" class="nav-link">
+            <span class="nav-code">[03]</span> Obrigações &amp; Conduta
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#isencao-responsabilidade" class="nav-link">
+            <span class="nav-code">[04]</span> Isenção Total &amp; Backup
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#suporte-slas" class="nav-link">
+            <span class="nav-code">[05]</span> Suporte &amp; Níveis SLA
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#disposicoes-gerais" class="nav-link">
+            <span class="nav-code">[06]</span> Disposições Gerais &amp; Foro
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#modelo-dual" class="nav-link">
+            <span class="nav-code">[07]</span> Matriz Dual BUSL + MIT
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#licenca-mit" class="nav-link">
+            <span class="nav-code">[08]</span> Licença MIT Perpétua
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#licenca-busl" class="nav-link">
+            <span class="nav-code">[09]</span> Licença Comercial BUSL-1.1
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#zero-vendor-lockin" class="nav-link">
+            <span class="nav-code">[10]</span> Zero Vendor Lock-in
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#espaco-licenca" class="nav-link">
+            <span class="nav-code">[11]</span> Licença Consolidada (BUSL &amp; MIT)
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#software-copyright" class="nav-link">
+            <span class="nav-code">[12]</span> Software Copyright &amp; Integridade
+          </a>
+        </li>
+  
+      </ul>
+
+      <div class="sidebar-footer">
+        <div><strong>INTEGRIDADE:</strong> SHA-256 BIT-EXACT</div>
+        <div><strong>ARQUITETURA:</strong> AIR-GAPPED 100%</div>
+        <div><strong>SUPORTE:</strong> CONTACT@SOILORE.COM</div>
+      </div>
+    </aside>
+
+    <main class="doc-main">
+      <!-- FICHA CATALOGRÁFICA MONUMENTAL (ABERTURA) -->
+      <article class="catalog-monumental-card reg-mark top-left bottom-right" id="introducao">
+        <div class="catalog-supertitle">
+          <span>BAGUET LEGAL &amp; LICENSING SPECIFICATION</span>
+          <span>//</span>
+          <span>SPEC-LEGAL-TERMS</span>
+          <span>//</span>
+          <span>EDITION 2026.10</span>
+        </div>
+
+        <h1 class="catalog-title">
+          Termos de Uso e Licenciamento de Software (Terms of Use &amp; Software License)
+        </h1>
+
+        <p class="catalog-subline">
+          Condições contratuais de instalação e operação, governança de nós offline, isenção de responsabilidade por integridade de dados, modelo dual de licenciamento BUSL-1.1 AND MIT, garantia perpétua de Zero Vendor Lock-in e certificação pública de integridade autoral (Software Copyright).
+        </p>
+
+        <!-- GRADE DE METADADOS CURATORIAIS -->
+        <div class="catalog-metadata-grid">
+          <div class="metadata-cell">
+            <div class="metadata-label">JURISDIÇÃO &amp; FORO</div>
+            <div class="metadata-value">Intenacional Berna/WIPO // Brazil</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">MODELO DUAL</div>
+            <div class="metadata-value">BUSL-1.1 AND MIT</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">ANCORAGEM AUTORAL</div>
+            <div class="metadata-value">OpenTimestamps (SHA-256)</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">TELEMETRIA</div>
+            <div class="metadata-value">Zero / 100% Air-Gapped</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">VERSÃO HOMOLOGADA</div>
+            <div class="metadata-value">v1.0.0 Oficial</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">SUPORTE INSTITUCIONAL</div>
+            <div class="metadata-value">contact@soilore.com</div>
+          </div>
+        </div>
+
+        <!-- PLINTO DE RESUMO EM 3 SEGUNDOS -->
+        <div class="summary-box-3sec">
+          <div class="summary-box-header">
+            <span>[RESUMO // TERMOS &amp; LICENCIAMENTO]</span>
+          </div>
+          <div class="summary-box-content">
+            O BAGUET é fornecido sob um modelo de transparência técnica com execução estritamente local em sua infraestrutura. O leitor e descompressor são 100% livres e perpétuos sob a licença MIT, enquanto a tecnologia avançada de compressão e aceleração de IA é governada por planos comerciais e cotas técnicas ativadas por tokens criptográficos offline. A autoria e a integridade do código são atestadas publicamente por carimbo temporal criptográfico de anterioridade.
+          </div>
+        </div>
+      </article>
+
+      <!-- ARTIGO 1: OBJETO DO SOFTWARE E ESCOPO DA CONCESSÃO -->
+      <section class="doc-section" id="objeto-escopo">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[TERMOS DE USO // OBJETO]</div>
+            <h2 class="section-heading">1. Objeto do Software e Escopo da Concessão</h2>
+          </div>
+          <div class="section-acc-num">SEC.LEGAL-01</div>
+        </div>
+
+        <ol>
+          <li><strong>Definição dos Serviços e Ecossistema:</strong> Os presentes Termos de Uso regem a instalação, o acesso, o teste, a aquisição comercial e a operação do ecossistema de software <strong>BAGUET</strong>, englobando o motor nativo compilado C-ABI/Rust, a biblioteca e SDK Python (<code>baguet_sdk</code>), os utilitários de interface de linha de comando (<code>baguet</code>), a interface visual local <strong>BAGUET Studio</strong>.</li>
+          <li><strong>Concessão de Direitos de Uso:</strong> O BAGUET concede ao usuário ou à organização licenciada uma licença não exclusiva, intransferível e mundial para uso do software de acordo com o tier técnico ativo e as condições estipuladas nestes termos e na respectiva matriz de licenciamento (BUSL-1.1 e MIT).</li>
+          <li><strong>Aceitação Vinculante e Condição Resolutiva de Acesso:</strong> Ao instalar o pacote via gerenciadores de pacotes (Pip, Conda), compilar o código-fonte, carregar a biblioteca em memória, adquirir passaportes ou executar qualquer um de seus binários ou comandos, o usuário manifesta concordância integral e vinculante com as disposições aqui estabelecidas. <em>Se você não quiser ou não puder concordar com estes Termos de Uso ou com quaisquer outras políticas oficiais do BAGUET, você não poderá acessar, baixar, instalar ou utilizar nossos serviços e softwares.</em></li>
+          <li><strong>Modificação, Descontinuação e Remoção de Recursos:</strong> O BAGUET reserva-se o direito de, a qualquer momento e a seu critério exclusivo, remover, modificar, atualizar ou descontinuar qualquer conteúdo, função, formato ou recurso disponibilizado no ecossistema de software se entender que o mesmo não deve mais integrar seu portfólio de ofertas, caso ocorra violação destes Termos de Uso ou de nossas políticas, ou quando estiver autorizada ou obrigada por determinação legal ou regulatória a assim proceder, resguardada sempre a prerrogativa incondicional de descompressão universal livre sob a Licença MIT.</li>
+        </ol>
+      </section>
+
+      <!-- ARTIGO 2: MODALIDADES DE ACESSO, CONTRATAÇÃO, TRIBUTOS E GOVERNANÇA -->
+      <section class="doc-section" id="modalidades-cotas">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[MODALIDADES // CONTRATAÇÃO &amp; TRIBUTOS]</div>
+            <h2 class="section-heading">2. Modalidades de Acesso, Contratação, Tributos e Governança de Nós</h2>
+          </div>
+          <div class="section-acc-num">SEC.LEGAL-02</div>
+        </div>
+
+        <ol>
+          <li><strong>Tier Comunitário (Community):</strong> Destinado a avaliação, estudos, integração e leitura universal. Disponibiliza operações de descompressão e reversão irrestritas, com teto de processamento de compressão em memória delimitado a 64 MB por operação com até 1 processo trabalhador e execução restrita a ambientes não clusterizados.</li>
+          <li><strong>Tiers Comerciais (Pro, Growth e Enterprise):</strong> Habilitam compressão em larga escala (até múltiplos gigabytes ou terabytes por operação), suporte a pipelines paralelos multi-core, criptografia autenticada em repouso (<code>BGT-AE</code> / AES-256), deltas de checkpoints e suite completa de aceleração de tensores e IA ativados via token criptográfico offline <code>BGTL1</code>. Os planos <strong>Pro</strong> e <strong>Growth</strong> são contratados via assinatura self-service periódica (mensal ou anual). O plano <strong>Enterprise</strong> é contratado exclusivamente mediante contrato comercial B2B personalizado com a Soilore, incluindo SLA sob medida, prazo de vigência dedicado e emissão de credenciais offline <code>BGTL1</code> para operação air-gapped.</li>
+          <li><strong>Período de Carência (<em>Grace Period</em>) e Perpetuidade de Acesso aos Dados:</strong> Em caso de término do período de vigência de uma assinatura comercial, o BAGUET ativa automaticamente uma tolerância técnica offline (7 dias no Pro, 15 dias no Growth e 90 dias no Enterprise) para que a renovação ou migração ocorra sem indisponibilidade de serviços produtivos. O encerramento definitivo de uma assinatura comercial não bloqueia nem impede o acesso aos dados previamente gerados: todas as operações de descompressão, reversão de contêineres e validação SHA-256 continuam livres, perpétuas e sem custo adicional sob a licença MIT.</li>
+          <li><strong>Responsabilidade Cadastral e Segurança na Compra Eletrônica:</strong> No ato da contratação ou compra de planos comerciais e tokens de ativação, o contratante deverá fornecer dados pessoais, corporativos e de pagamento verídicos, completos e precisos, sendo civil e penalmente responsável por sua exatidão. O usuário é expressamente responsável por averiguar as questões de segurança exigidas para transações digitais pela internet, certificando-se de que está navegando no domínio oficial do BAGUET (<code>baguet.soilore.com</code>) e de que o certificado de segurança digital é exibido ativamente pelo navegador, prevenindo o acesso a páginas clonadas, espelhadas ou de phishing.</li>
+          <li><strong>Tributos, Retenção na Fonte e Localização Fiscal:</strong> O usuário ou organização licenciada é integralmente responsável pelo recolhimento e pagamento de todas as outras taxas, tributos, tarifas e impostos associados à contratação e ao uso de qualquer um dos nossos serviços e softwares, onde quer que sejam cobrados pela legislação aplicável e que sejam de sua responsabilidade.</li>
+          <li><strong>Política de Não-Reembolso para Conteúdo Digital e Licenças:</strong> Dada a natureza técnica de fornecimento de conteúdo digital, binários compilados de entrega imediata e emissão de chaves criptográficas de ativação offline (tokens <code>BGTL1</code>), não oferecemos reembolso, cancelamento retroativo ou concessão de créditos por serviços já disponibilizados ou licenças já emitidas, ressalvadas as hipóteses cogentes expressamente previstas na legislação de proteção ao consumidor aplicável, como o direito de arrependimento legal.</li>
+        </ol>
+      </section>
+
+      <!-- ARTIGO 3: OBRIGAÇÕES, TITULARIDADE DOS DADOS E CÓDIGO DE CONDUTA -->
+      <section class="doc-section" id="titularidade-dados">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[SOBERANIA // CÓDIGO DE CONDUTA]</div>
+            <h2 class="section-heading">3. Obrigações, Titularidade dos Dados e Conduta do Usuário</h2>
+          </div>
+          <div class="section-acc-num">SEC.LEGAL-03</div>
+        </div>
+
+        <ol>
+          <li><strong>Soberania e Titularidade dos Dados:</strong> Todos os dados, arquivos, matrizes, tensores e logs processados pelo BAGUET permanecem de propriedade exclusiva e integral do usuário ou de sua organização. O software não reivindica nenhum direito de propriedade intelectual sobre as entradas submetidas ou saídas geradas.</li>
+          <li><strong>Código Estrito de Conduta e Condições de Uso:</strong> A autorização para acesso, download, instalação e operação do software e de quaisquer serviços do BAGUET está expressamente condicionada ao compromisso solene e irrevogável do usuário de cumprir as seguintes condições:
+            <ul>
+              <li><strong>Autenticidade e Veracidade:</strong> Não se passar por outras pessoas físicas ou jurídicas, nem fornecer intencionalmente informações imprecisas, incompletas, falsas ou fraudulentas;</li>
+              <li><strong>Proibição de Atividades Ilícitas e Condutas Criminosas:</strong> Não praticar qualquer ato ilícito, enganoso, fraudulento ou com finalidade ilegal ou não autorizada, sendo terminantemente vedado utilizar o software para processar dados ou de qualquer forma estar associado, no presente ou passado, à pedofilia, exploração ou crimes sexuais, terrorismo, tráfico ilícito de drogas ou armas, crimes de ódio, racismo, preconceito de qualquer natureza, lavagem de dinheiro ou violação a direitos fundamentais;</li>
+              <li><strong>Inviolabilidade de Termos e Políticas:</strong> Não violar (nem ajudar, facilitar ou incentivar terceiros a violar) estes Termos de Uso, as políticas de licenciamento ou as diretrizes técnicas e de privacidade do BAGUET;</li>
+              <li><strong>Integridade Operacional:</strong> Não realizar qualquer ação que interfira, sobrecarregue, comprometa, desestabilize ou afete adversamente a operação pretendida do software e de seus utilitários;</li>
+              <li><strong>Acesso Não Autorizado e Coleta Automatizada:</strong> Não tentar acessar ou coletar informações, credenciais ou dados valendo-se de métodos não autorizados, inclusive mediante criação automatizada de contas, extração em massa (scraping), ataques de força bruta ou robôs não consentidos formalmente por escrito;</li>
+              <li><strong>Proteção de Confidencialidade e Direitos de Terceiros:</strong> Não publicar, trafegar ou expor informações particulares, sigilosas ou confidenciais, nem praticar qualquer conduta que viole a privacidade ou os direitos de propriedade intelectual de terceiros;</li>
+              <li><strong>Consentimento para Atualizações de Software:</strong> Concordar expressamente que o BAGUET poderá disponibilizar, baixar e instalar atualizações, correções de segurança, otimizações algorítmicas e patches de manutenção do software operado em seu ambiente de execução;</li>
+              <li><strong>Conformidade Documental Integral:</strong> Cumprir rigorosamente todas as políticas de uso, segurança e privacidade dispostas nos documentos e especificações oficiais do projeto.</li>
+            </ul>
+          </li>
+          <li><strong>Respeito aos Direitos de Propriedade Intelectual e Vedação a Trabalhos Derivados:</strong> O usuário compromete-se formalmente a não violar ou tentar violar a segurança do software, seu código-fonte proprietário sob a BUSL-1.1, domínios, marcas ou registros. É expressamente vedado copiar, redistribuir, modificar, realizar engenharia reversa, descompilar, contornar mecanismos de validação de tokens <code>BGTL1</code> ou criar trabalhos derivados de qualquer dos materiais, marcas, documentações ou conteúdos proprietários fora dos estritos termos permitidos pela licença aplicável.</li>
+        </ol>
+      </section>
+
+      <!-- ARTIGO 4: ISENÇÃO TOTAL E BACKUP -->
+      <section class="doc-section" id="isencao-responsabilidade">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[RESPONSABILIDADE // SALVAGUARDA]</div>
+            <h2 class="section-heading">4. Isenção Total de Responsabilidade por Perda de Dados, Dever de Backup</h2>
+          </div>
+          <div class="section-acc-num">SEC.LEGAL-04</div>
+        </div>
+
+        <ol>
+          <li><strong>Fornecimento "AS IS" (No Estado em que se Encontra):</strong> O ecossistema BAGUET é disponibilizado estritamente "no estado em que se encontra", com todas as características técnicas homologadas em seus testes, sem garantias implícitas adicionais de adequação mercantil ou infalibilidade operacional fora dos escopos matemáticos demonstrados.</li>
+          <li><strong>Isenção Total por Perda, Corrompimento ou Inacessibilidade de Dados:</strong> Sob nenhuma circunstância a Soilore Tech, seus fundadores, desenvolvedores, mantenedores ou distribuidores serão civil, penal ou contratualmente responsabilizados por qualquer perda de arquivos, corrompimento de informações, degradação física em repouso (<em>bit-rot</em> de disco), setores defeituosos de hardware, falhas de energia, erros de leitura/escrita do sistema operacional hospedeiro, oscilações de rede, ataques de terceiros ou exclusão acidental ocorrida durante ou após a operação do software.</li>
+          <li><strong>Mecanismos Nativos de Integridade Opt-In e Dever Preventivo de Backup:</strong> O BAGUET disponibiliza nativamente ferramentas rigorosas de verificação matemática de integridade — tais como o parâmetro <code>verify_roundtrip=True</code> no SDK Python, a geração de recibos periciais Ed25519 (<code>--receipt</code> / <code>baguet verify-receipt</code>), a conferência de hash SHA-256 e o cálculo de integridade CRC32 em cofres Slab (<code>.bgtv</code>). Constitui obrigação estrita e indelegável do usuário ou organização ativar a verificação de integridade nos fluxos produtivos em que a criticidade dos dados o exigir, realizar conferências periciais de integridade antes de qualquer descarte ou truncamento de arquivos fonte e manter rotinas corporativas de segurança e cópias de salvaguarda (estratégia de backup 3-2-1) plenamente funcionais e testadas de forma contínua e independente.</li>
+          <li><strong>Decisão Autônoma de Descarte de Arquivos:</strong> A exclusão, substituição ou movimentação de arquivos originais é um ato discricionário e de responsabilidade 100% exclusiva do operador. O BAGUET não executa exclusão automática dos dados de origem por padrão, resguardando sempre o controle soberano na infraestrutura do usuário.</li>
+          <li><strong>Teto Indenizatório Absoluto:</strong> Caso qualquer autoridade judicial competente estabeleça eventual responsabilidade civil, o valor indenizatório agregado máximo fica expressamente limitado ao montante efetivamente pago pelo usuário pelo licenciamento comercial do BAGUET no último mês anterior ao fato gerador, ou a US$ 50,00 para usuários do tier gratuito Community.</li>
+          <li><strong>Exclusão de Responsabilidade por Caso Fortuito ou Força Maior:</strong> Em nenhuma hipótese a Soilore Tech será responsável por prejuízos, lucros cessantes, paralisações operacionais, atrasos ou danos de qualquer natureza decorrentes da ocorrência de eventos de caso fortuito ou de força maior, abrangendo, sem limitação: desastres climáticos, catástrofes naturais, panes elétricas ou de telecomunicações generalizadas, conflitos bélicos, ataques cibernéticos em massa que afetem a infraestrutura global da internet, pandemias, embargos internacionais, comoções civis ou determinações imperativas do poder público.</li>
+        </ol>
+      </section>
+
+      <!-- ARTIGO 5: SUPORTE E SLAS -->
+      <section class="doc-section" id="suporte-slas">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[SUPORTE TÉCNICO // VIGÊNCIA]</div>
+            <h2 class="section-heading">5. Suporte Técnico, Níveis de Serviço (SLAs) e Vigência Contratual</h2>
+          </div>
+          <div class="section-acc-num">SEC.LEGAL-05</div>
+        </div>
+
+        <ol>
+          <li>
+            <strong>Canais de Atendimento:</strong> O suporte técnico é prestado conforme o plano contratado, pelos meios eletrônicos indicados na documentação oficial do software.
+          </li>
+          <li><strong>Vigência e Rescisão:</strong> Para os planos <strong>Pro</strong> e <strong>Growth</strong>, a vigência segue o período contratado (mensal ou anual), podendo a renovação automática ser cancelada a qualquer momento através do portal de faturamento ou no BAGUET Studio, sem multas rescisórias e sem necessidade de aviso prévio. Para o plano <strong>Enterprise</strong>, a vigência, renovação, níveis de serviço (SLA) e eventuais condições de rescisão são estipuladas no respectivo Instrumento Particular de Contrato B2B celebrado entre as partes.</li>
+        </ol>
+      </section>
+
+      <!-- ARTIGO 6: DISPOSIÇÕES GERAIS, LEGISLAÇÃO E FORO -->
+      <section class="doc-section" id="disposicoes-gerais">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[DISPOSIÇÕES GERAIS // LEGISLAÇÃO &amp; FORO]</div>
+            <h2 class="section-heading">6. Disposições Gerais, Legislação Aplicável</h2>
+          </div>
+          <div class="section-acc-num">SEC.LEGAL-06</div>
+        </div>
+
+        <ol>
+          <li><strong>Independência das Cláusulas (Severabilidade):</strong> Se qualquer disposição destes termos for considerada inválida, nula ou inexequível por qualquer autoridade judicial ou arbitral competente, as demais disposições permanecerão em pleno vigor, validade e efeito, sendo a cláusula invalidada substituída por determinação legal correspondente de igual finalidade econômica e jurídica.</li>
+          <li><strong>Atualização Periódica dos Termos:</strong> Eventuais atualizações destes Termos de Uso serão publicadas com aviso de versão e histórico de alterações na documentação oficial e comunicadas por meio dos canais oficiais do projeto com antecedência mínima razoável, assegurada sempre a preservação dos direitos adquiridos sob versões anteriores até a expiração da vigência do plano contratado.</li>
+          <li><strong>Legislação Aplicável e Eleição de Foro:</strong> Estes Termos de Uso e todas as obrigações e controvérsias decorrentes de sua interpretação, cumprimento ou execução serão regidos e interpretados em estrita consonância com a legislação da República Federativa do Brasil. Para dirimir qualquer dúvida, litígio ou controvérsia oriunda deste instrumento, as partes elegem de comum acordo e em caráter de exclusividade o Foro da Comarca de Campinas, Estado de São Paulo, com renúncia expressa e irretratável a qualquer outro foro, por mais privilegiado ou especial que seja ou que venha a se constituir.</li>
+        </ol>
+      </section>
+
+      <!-- ARTIGO 7: MODELO DUAL -->
+      <section class="doc-section" id="modelo-dual">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[ARQUITETURA DE LICENCIAMENTO // DUAL]</div>
+            <h2 class="section-heading">7. O Modelo de Licenciamento Dual (BUSL-1.1 AND MIT)</h2>
+          </div>
+          <div class="section-acc-num">SEC.LEGAL-07</div>
+        </div>
+
+        <div class="summary-box-3sec">
+          <div class="summary-box-header">
+            <span>[RESUMO // LICENÇA]</span>
+          </div>
+          <div class="summary-box-content">
+            O BAGUET opera sob um modelo de licenciamento dual transparente <strong><code>BUSL-1.1 AND MIT</code></strong>. Leitura, descompressão e verificação de dados são perpétuas, abertas e 100% livres sob a licença MIT para sempre. Os recursos de compressão de alta vazão e aceleração de IA são licenciados sob a Business Source License (BUSL-1.1), com conversão garantida em código aberto após a Change Date.
+          </div>
+        </div>
+
+        <p>
+          Para assegurar previsibilidade aos clientes corporativos e, simultaneamente, garantir a liberdade perene da comunidade de tecnologia, o BAGUET adota duas licenças complementares claramente demarcadas no arquivo <code>LICENSE</code> e nos cabeçalhos de código:
+        </p>
+
+        <!-- DIAGRAMA: MATRIZ DE LICENCIAMENTO DUAL -->
+        <div class="diagram-instrument-frame reg-mark top-left bottom-right">
+          <div class="diagram-bezel">
+            <span class="diagram-title">MATRIZ DE LICENCIAMENTO DUAL // BUSL-1.1 AND MIT</span>
+            <span class="mono">[LEGAL ARCHITECTURE]</span>
+          </div>
+          <div class="ascii-schematic-box">
++-----------------------------------------------------------------------------------+
+|                            ECOSSISTEMA BAGUET v1.0.0                              |
++-------------------------------------------------+---------------------------------+
+|              MÓDULO DE LEITURA                  |      MÓDULO DE PRODUÇÃO         |
+|             E DESCOMPRESSÃO                     |      COMPRESSÃO E IA            |
++-------------------------------------------------+---------------------------------+
+| • Descompressão universal (.bgt)                | • Compressão multi-thread SIMD  |
+| • Reversão de contêineres (.bgtu)               | • Computação em tensores de IA  |
+| • Mapeamento em memória (mmap / .bgtt)          | • RAG Top-K com sketch pruning  |
+| • Validação de integridade SHA-256              | • Atenção direta e offloader KV |
+| • Inspeção O(1) de formatos e metadados         | • Criptografia forte AES-256    |
+|                                                 | • Cofres indexados VSP (.bgtv)  |
++-------------------------------------------------+---------------------------------+
+|                  LICENÇA:                       |            LICENÇA:             |
+|                    MIT                          |            BUSL-1.1             |
+|   (100% Aberta, Gratuita e Perpétua)            |    (Comercial Offline BGTL1)    |
++-------------------------------------------------+---------------------------------+</div>
+        </div>
+      </section>
+
+      <!-- ARTIGO 8: LICENÇA MIT -->
+      <section class="doc-section" id="licenca-mit">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[CÓDIGO ABERTO // PERPÉTUO]</div>
+            <h2 class="section-heading">8. Licença MIT Perpétua (Universal Reader &amp; Verifier)</h2>
+          </div>
+          <div class="section-acc-num">SEC.LEGAL-08</div>
+        </div>
+
+        <p>
+          O código e os algoritmos que compõem o <strong>Módulo de Leitura e Descompressão</strong> são distribuídos sob a licença de código aberto permissiva <strong>MIT</strong>:
+        </p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">TEXTO INTEGRAL // MIT LICENSE</span>
+              <span class="terminal-lang-badge">text</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-text">MIT License
+
+Copyright (c) 2026 Soilore Tech
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</code></pre>
+        </div>
+      </section>
+
+      <!-- ARTIGO 9: LICENÇA BUSL-1.1 -->
+      <section class="doc-section" id="licenca-busl">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[COMPRESSÃO &amp; IA // TIER COMERCIAL]</div>
+            <h2 class="section-heading">9. Licença BUSL-1.1 (Business Source License v1.1)</h2>
+          </div>
+          <div class="section-acc-num">SEC.LEGAL-09</div>
+        </div>
+
+        <p>
+          Os módulos avançados de alta vazão, aceleração de hardware SIMD para compressão e os kernels matemáticos de <em>Compute-on-Compressed-Data</em> para inteligência artificial são disponibilizados sob a <strong>Business Source License 1.1 (BUSL-1.1)</strong>:
+        </p>
+
+        <ol>
+          <li><strong>Uso Permitido:</strong> O uso é livre e gratuito para finalidades de avaliação, teste, desenvolvimento acadêmico e em produção dentro dos limites do tier <code>Community</code> (até 64 MB por operação).</li>
+          <li><strong>Uso de Produção em Escala:</strong> A operação do módulo de compressão avançada para processamento de volumes superiores a 64 MB, ou em ambientes distribuídos corporativos, requer a posse de um passaporte comercial ativo validado via token offline <code>BGTL1</code>.</li>
+          <li><strong>Garantia de Conversão em Código Aberto (<em>Change Date</em>):</strong> Em conformidade com o padrão BUSL-1.1, cada versão do software possui uma data fixa de transição (<em>Change Date</em>), momento em que todo o código-fonte proprietário de compressão é automaticamente convertido em licença aberta irrestrita (Apache 2.0 ou MIT), garantindo que a tecnologia jamais permaneça proprietária indefinidamente.</li>
+        </ol>
+      </section>
+
+      <!-- ARTIGO 10: ZERO VENDOR LOCK-IN -->
+      <section class="doc-section" id="zero-vendor-lockin">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[COMPROMISSO INSTITUCIONAL]</div>
+            <h2 class="section-heading">10. Garantia de Zero Vendor Lock-in</h2>
+          </div>
+          <div class="section-acc-num">SEC.LEGAL-10</div>
+        </div>
+
+        <p>O BAGUET assume perante o mercado e os usuários o compromisso solene e irrevogável de que:</p>
+
+        <div class="lab-plate lab-plate-crypto">
+          <div class="lab-plate-header">
+            <span class="lab-plate-tag blue">DECLARAÇÃO FORMAL</span>
+            <span>ZERO VENDOR LOCK-IN GUARANTEE</span>
+          </div>
+          <div class="lab-plate-content mono" style="font-size: 12px; line-height: 1.6;">
+1. Nenhum arquivo, tensor, áudio, vídeo ou banco de dados comprimido pelo BAGUET
+   será retido como refém de planos pagos ou conectividade com a internet.
+2. Todo usuário ou empresa tem o direito irrevogável de descompactar, reverter,
+   auditar e validar 100% dos seus dados a qualquer momento de forma gratuita,
+   utilizando o descompressor aberto universal compilado sob licença MIT.
+3. A tecnologia do descompressor é autossuficiente e funciona de forma totalmente
+   desconectada, sem dependência de servidores de validação de licença remota.
+          </div>
+        </div>
+      </section>
+
+      <!-- ARTIGO 11: TEXTO JURÍDICO CONSOLIDADO DA LICENÇA -->
+      <section class="doc-section" id="espaco-licenca">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[LICENÇA CONSOLIDADA // BUSL-1.1 AND MIT]</div>
+            <h2 class="section-heading">11. Texto Consolidado da Licença de Software (Baguet Dual-Layer License v1.0)</h2>
+          </div>
+          <div class="section-acc-num">SEC.LEGAL-11</div>
+        </div>
+
+        <p>
+          O presente instrumento consolida os termos jurídicos integrais que regem o uso, distribuição, compilação, execução e incorporação do software <strong>BAGUET v1.0.0</strong> em ambientes de desenvolvimento, pesquisa, teste e produção. O ecossistema opera sob a licença composta <strong><code>BUSL-1.1 AND MIT</code></strong>, dividida estritamente entre os componentes universais de leitura/descompressão (sob Licença MIT) e os componentes de compressão e aceleração de alta vazão (sob a Business Source License v1.1).
+        </p>
+
+        <!-- SUB-BLOCO I: LICENÇA MIT DO LEITOR UNIVERSAL -->
+        <h3 class="subsection-heading">11.1 Parte I — Licença Aberta Perpétua do Leitor Universal (MIT License)</h3>
+        <p>
+          Aplicável a: Todos os módulos de descompressão, rotinas de verificação criptográfica SHA-256, algoritmos de leitura seletiva via memória mapeada (<em>Zero-Copy mmap</em>), inversores de containers (<code>.bgt*</code>) e bibliotecas cliente de leitura disponibilizadas no código-fonte público.
+        </p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator" style="background: #10B981;"></span>
+              <span class="terminal-bezel-tag">CANONICAL TEXT // THE MIT LICENSE (READER &amp; VERIFIER)</span>
+              <span class="terminal-lang-badge">spdx: mit</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-text">MIT License
+
+Copyright (c) 2026 Soilore Tech (https://soilore.com)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</code></pre>
+        </div>
+
+        <!-- SUB-BLOCO II: BUSINESS SOURCE LICENSE v1.1 -->
+        <h3 class="subsection-heading">11.2 Parte II — Business Source License v1.1 (Motor de Compressão &amp; Kernels IA)</h3>
+        <p>
+          Aplicável a: Motor de compressão ortogonal de planos de bits, kernels SIMD compilados, transcodificador algébrico reversível (BGTU6), indexador e compilador de catálogos e orquestrador de aceleração de tensores e IA em ambientes comerciais.
+        </p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">CANONICAL TEXT // BUSINESS SOURCE LICENSE v1.1</span>
+              <span class="terminal-lang-badge">spdx: busl-1.1</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-text">Business Source License 1.1 (BUSL-1.1)
+
+Licensor: Soilore Tech
+Contact: contact@soilore.com / https://baguet.soilore.com
+Licensed Work: BAGUET High-Throughput Lossless Compression Engine, Bit-Plane
+Decomposition Core, BGTU6 Universal Transcoder, and Associated AI Acceleration Kernels.
+
+Change Date: October 29, 2030 (4 years from release date)
+Change License: Apache License, Version 2.0 (or, at Licensor's option, MIT License)
+
+TERMS AND CONDITIONS
+
+1. Grant of License.
+Licensor hereby grants you the right to copy, modify, create derivative works,
+redistribute, and make non-production and production use of the Licensed Work
+subject to the terms and Additional Use Grants specified below.
+
+2. Additional Use Grant (Permitted Production Uses).
+You may use the Licensed Work in production without paying a commercial license
+fee under any of the following conditions:
+  a. Community Tier: Your compression operations do not exceed 64 Megabytes (64 MB)
+     per operation with at most 1 worker process, and direct AI sandbox executions
+     do not exceed 16 Megabytes (16 MB); or
+  b. Decompression and Verification: Any execution exclusively performing data
+     decompression, format reversion, hash verification, or read-only querying
+     of already-compressed .bgt* files; or
+  c. Academic and Personal Evaluation: Non-commercial academic research, personal
+     testing, and local evaluation.
+
+3. Commercial License Requirement.
+Any production use exceeding the Community Tier limits (including multi-worker
+compression, payloads larger than 64 MB, enterprise scale, or deployment across
+commercial nodes) requires an active commercial license token (BGTL1) issued by
+Licensor or a written commercial agreement executed with Soilore Tech.
+
+4. Excluded Use (Anti-Circumvention &amp; Managed Service Restriction).
+You may not provide the Licensed Work as a fully managed commercial data
+compression cloud service, hosted storage gateway, or drop-in API replacement
+that directly competes with Soilore Tech's commercial SaaS offerings, without
+prior express written authorization from Licensor.
+
+5. Automatic Conversion (Change Date).
+Effective on the Change Date specified above, this license shall automatically,
+irrevocably, and permanently terminate, and the Licensed Work shall be governed
+exclusively by the Change License (Apache License 2.0 / MIT License) without any
+additional restrictions.
+
+6. Disclaimer of Warranties and Limitation of Liability.
+THE LICENSED WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR
+A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL LICENSOR BE LIABLE
+FOR ANY CLAIM, DAMAGES, LOSS OF DATA, OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM OR OUT OF THE USE OR PERFORMANCE
+OF THE LICENSED WORK.</code></pre>
+        </div>
+
+        <!-- NOTA DE TRANSIÇÃO E CERTIFICAÇÃO -->
+        <div class="lab-plate lab-plate-note">
+          <div class="lab-plate-header">
+            <span class="lab-plate-tag">CLÁUSULA PETIFICADA</span>
+            <span>DIREITO PERPÉTUO DE RECUPERAÇÃO DE DADOS</span>
+          </div>
+          <div class="lab-plate-content">
+            Nenhuma modificação futura nas licenças comerciais do BAGUET poderá revogar ou retroagir contra o direito público de descompressão universal livre sob a Licença MIT. Todo dado gerado ou arquivado em qualquer container da família <code>.bgt*</code> pertence com exclusividade ao usuário e pode ser extraído eternamente sem custos ou taxas de licenciamento.
+          </div>
+        </div>
+      </section>
+
+      <!-- ARTIGO 12: SOFTWARE COPYRIGHT & CERTIFICAÇÃO CRIPTOGRÁFICA -->
+      <section class="doc-section" id="software-copyright">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[SOFTWARE COPYRIGHT // CERTIFICAÇÃO CRIPTOGRÁFICA]</div>
+            <h2 class="section-heading">12. Registro de Autoria, Integridade Criptográfica e Software Copyright</h2>
+          </div>
+          <div class="section-acc-num">SEC.LEGAL-12</div>
+        </div>
+
+        <p>
+          O código-fonte, as especificações arquiteturais e os componentes binários do ecossistema BAGUET possuem sua anterioridade legal e integridade autoral certificadas por carimbo temporal criptográfico descentralizado e público (protocolo OpenTimestamps / SHA-256), em estrita conformidade com os tratados internacionais de proteção de software e propriedade intelectual (Convenção de Berna e Tratado de Direitos Autorais da OMPI/WIPO).
+        </p>
+
+        <p>
+          A prova de integridade e anterioridade pode ser verificada a qualquer momento por auditores, peritos ou usuários de forma offline e independente, utilizando ferramentas públicas de conferência de recibos criptográficos (<code>.ots</code>).
+        </p>
+
+        <!-- CERTIFICADO CRIPTOGRÁFICO DE SOFTWARE COPYRIGHT -->
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">CERTIFICADO OFICIAL // REGISTRO TEMPORAL DE AUTORIA</span>
+              <span class="terminal-lang-badge">ots</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-text">================================================================================
+CERTIFICADO OFICIAL DE SOFTWARE COPYRIGHT &amp; CARIMBO TEMPORAL CRIPTOGRÁFICO
+================================================================================
+Protocolo de Registro  : Carimbo Temporal Criptográfico Público (OpenTimestamps)
+Algoritmo Criptográfico: SHA-256 (FIPS 180-4)
+Ativo Homologado       : Motor Nativo BAGUET v1.0.0 (Core Congelado &amp; Especificações)
+Status de Certificação : HOMOLOGADO &amp; AUDITÁVEL OFFLINE
+
+HASH SHA-256 DO CÓDIGO CONGELADO:
+[INSIRA_AQUI_A_HASH_SHA256_REAL_DO_ARQUIVO_CONGELADO]
+
+RECIBO CRIPTOGRÁFICO DE ANTERIORIDADE (.ots):
+[INSIRA_AQUI_O_LINK_OU_IDENTIFICADOR_DO_RECIBO_OTS]
+================================================================================</code></pre>
+        </div>
+      </section>
+
+      <footer style="margin-top: 100px; padding-top: 32px; border-top: 2px solid var(--ink-primary); font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <strong>BAGUET v1.0.0</strong> // SOILORE TECH &amp; ECOSYSTEM CONTRIBUTORS
+        </div>
+        <div>
+          C-ABI: RUST-SIMD (AVX2/NEON)
+        </div>
+        <div>
+          LICENCIAMENTO: <span class="swiss-red">BUSL-1.1 AND MIT</span>
+        </div>
+      </footer>
+  
+    </main>
+  </div>
+
+  <!-- BOTÃO VOLTAR AO TOPO -->
+  <button class="back-to-top-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Voltar ao início">
+    <span>[ ↑ VOLTAR AO TOPO ]</span>
+  </button>
+
+  <script>
+    function filterSidebarIndex() {
+      const query = document.getElementById('sidebar-filter-input').value.toLowerCase();
+      const items = document.querySelectorAll('#sidebar-nav-list .nav-item');
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(query)) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    function copySnippet(btn) {
+      const chassis = btn.closest('.terminal-chassis');
+      const code = chassis.querySelector('code').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const originalText = btn.innerText;
+        btn.innerText = '[ COPIADO! ]';
+        btn.style.background = 'var(--accent-swiss)';
+        btn.style.borderColor = 'var(--accent-swiss)';
+        setTimeout(() => {
+          btn.innerText = originalText;
+          btn.style.background = '#242424';
+          btn.style.borderColor = '#444';
+        }, 2000);
+      }).catch(err => {
+        console.error('Falha ao copiar:', err);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const sections = document.querySelectorAll('section.doc-section, article.catalog-monumental-card');
+      const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+
+      window.addEventListener('scroll', () => {
+        let currentId = '';
+        const scrollPosition = window.scrollY + 100;
+
+        sections.forEach(section => {
+          if (section.offsetTop <= scrollPosition) {
+            currentId = section.getAttribute('id');
+          }
+        });
+
+        if (currentId) {
+          navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + currentId) {
+              link.classList.add('active');
+            }
+          });
+        }
+      }, { passive: true });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,3832 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BAGUET v1.0.0 // GUIA TÉCNICO OFICIAL</title>
+  <meta name="description" content="Guia técnico oficial de instalação, uso e operação do BAGUET v1.0.0. Compute-on-Compressed-Data, SDK Python, CLI, Studio, Benchmarks, Governança Offline BGTL1 e Termos Legais.">
+  <link rel="icon" type="image/png" href="../studio/baguet-favicon-white-512.png">
+
+  <!-- 
+    BAGUET v1.0.0 — OFFICIAL TECHNICAL SPECIFICATION & PROJECT DOCUMENT
+    Art Direction: Kunsthalle Basel × Dieter Rams (Braun 1965)
+    Aesthetic: Contemporary Swiss Exhibition Catalog Sheet & Physical Laboratory Instrument
+    Design Rules: 
+      - 100% Offline / Air-Gapped Ready
+      - Zero Emojis in HTML/CSS/JS
+      - Strict 0px Border-Radius everywhere (border-radius: 0px !important)
+      - Zero Neon Glow / Zero Glassmorphism Blur / Zero Cyberpunk
+      - High Legibility Monospace & Architectural Typography
+      - Standard Universal Headings, Code Delimiters & Semantic Markup
+  -->
+
+  <style>
+    /* ==========================================================================
+       1. DESIGN TOKENS KUNSTHALLE BASEL × DIETER RAMS (BRAUN 1965)
+       ========================================================================== */
+    :root {
+      --bg-museum: #F6F5F0;       /* Papel algodão arquitetônico cru — 60%+ espaço negativo */
+      --bg-plinth: #EFECE6;       /* Pedestal de pedra calcária / bancada de laboratório */
+      --bg-card: #FFFFFF;         /* Ficha catalográfica / chassi branco puro */
+      --bg-terminal: #0A0A0A;     /* Alumínio anodizado preto / console de comando */
+      --ink-primary: #0A0A0A;     /* Tinta preta litográfica profunda */
+      --ink-muted: #6E6D68;       /* Grafite técnico curatorial */
+      --accent-swiss: #D92B2B;    /* Vermelho Internacional Suíço cirúrgico */
+      --accent-crypto: #14213D;   /* Azul Marinho Criptográfico (Ed25519 / AES-256-SIV) */
+      --accent-green: #2E7D32;    /* Verde militar de verificação pericial */
+      
+      --hairline: 1px solid var(--ink-primary);
+      --hairline-subtle: 1px solid rgba(10, 10, 10, 0.15);
+      --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Berkeley Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+      
+      --header-h: 52px;
+      --sidebar-w: 320px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      border-radius: 0px !important; /* REGRA CAPITAL: ZERO BORDAS ARREDONDADAS */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent-swiss) !important;
+      outline-offset: 1px !important;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-museum);
+      color: var(--ink-primary);
+    }
+
+    body {
+      background-color: var(--bg-museum);
+      color: var(--ink-primary);
+      font-family: var(--font-display);
+      font-size: 14.5px;
+      line-height: 1.65;
+      letter-spacing: -0.01em;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    ::selection {
+      background: var(--accent-swiss);
+      color: #FFFFFF;
+    }
+
+    /* Tipografia e Numerais Tabulares */
+    .mono {
+      font-family: var(--font-mono);
+      font-feature-settings: "tnum" 1, "zero" 1;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+
+    .swiss-red { color: var(--accent-swiss); }
+    .crypto-blue { color: var(--accent-crypto); }
+    .text-muted { color: var(--ink-muted); }
+    .uppercase { text-transform: uppercase; }
+
+    /* Hachuras Suíças 45 Graus */
+    .hatch-45 {
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(10, 10, 10, 0.05),
+        rgba(10, 10, 10, 0.05) 1px,
+        transparent 1px,
+        transparent 5px
+      );
+    }
+
+    .hatch-red-45 {
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(217, 43, 43, 0.12),
+        rgba(217, 43, 43, 0.12) 1px,
+        transparent 1px,
+        transparent 5px
+      );
+    }
+
+    /* Miras de Registro Tipográfico (+) */
+    .reg-mark {
+      position: relative;
+    }
+    .reg-mark::before, .reg-mark::after {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent-swiss);
+      line-height: 1;
+      width: 14px;
+      height: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .reg-mark.top-left::before { content: "+"; top: -1px; left: -1px; transform: translate(-50%, -50%); }
+    .reg-mark.top-right::after { content: "+"; top: -1px; right: -1px; transform: translate(50%, -50%); }
+    .reg-mark.bottom-left::before { content: "+"; bottom: -1px; left: -1px; transform: translate(-50%, 50%); }
+    .reg-mark.bottom-right::after { content: "+"; bottom: -1px; right: -1px; transform: translate(50%, 50%); }
+
+    
+    
+    /* ==========================================================================
+       TABS DE ALTERNÂNCIA DE DOCUMENTOS & CABEÇALHO SUPERIOR MONUMENTAL
+       ALINHADO VERTICALMENTE COM O SIDEBAR (WIDTH: VAR(--SIDEBAR-W))
+       ========================================================================== */
+    .doc-topbar {
+      position: sticky;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: var(--header-h);
+      background-color: var(--bg-museum);
+      border-bottom: var(--hairline);
+      z-index: 1000;
+      display: flex;
+      align-items: stretch;
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    .topbar-cell {
+      display: flex;
+      align-items: center;
+    }
+
+    /* Caixa da logo com largura idêntica ao sidebar (320px) para alinhamento vertical absoluto */
+    .topbar-brand {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      max-width: var(--sidebar-w);
+      height: 100%;
+      box-sizing: border-box;
+      border-right: var(--hairline);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      background: var(--bg-museum);
+    }
+
+    .topbar-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border: 1px solid var(--accent-swiss);
+      background: var(--accent-swiss);
+      color: #FFF;
+      letter-spacing: 0.05em;
+    }
+
+    /* Tabs de Alternância de Documentos - Sem borda esquerda duplicada e sem margem */
+    .topbar-doc-tabs {
+      display: flex;
+      align-items: stretch;
+      margin: 0;
+      padding: 0;
+      border-left: none; /* ELIMINA LINHA DIVISÓRIA DUPLICADA */
+    }
+
+    .topbar-doc-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 20px;
+      background: transparent;
+      border: none;
+      border-right: var(--hairline);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--ink-muted);
+      cursor: pointer;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: all 0.12s ease;
+      white-space: nowrap;
+    }
+
+    .topbar-doc-tab:hover {
+      background: var(--bg-plinth);
+      color: var(--ink-primary);
+    }
+
+    .topbar-doc-tab.active {
+      background: #FFFFFF;
+      color: var(--ink-primary);
+      box-shadow: inset 0 -2px 0 var(--accent-swiss);
+    }
+
+    /* Espaçador neutro que preenche o vão central até as ações da direita */
+    .topbar-status-spacer {
+      flex: 1;
+      height: 100%;
+      border-right: var(--hairline);
+      background: transparent;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: stretch;
+    }
+
+    .topbar-btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      background: transparent;
+      border: none;
+      border-right: var(--hairline);
+      padding: 0 16px;
+      cursor: pointer;
+      color: var(--ink-primary);
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.12s ease;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .topbar-btn:hover {
+      background: var(--bg-plinth);
+      color: var(--accent-swiss);
+    }
+
+    .topbar-btn:last-child {
+      border-right: none;
+    }
+
+    @media (max-width: 960px) {
+      .topbar-brand {
+        width: auto;
+        min-width: 0;
+        max-width: none;
+        padding: 0 12px;
+      }
+      .topbar-status-spacer {
+        display: none;
+      }
+      .topbar-doc-tab {
+        padding: 0 10px;
+        font-size: 10px;
+      }
+      .topbar-btn {
+        padding: 0 10px;
+        font-size: 10px;
+      }
+    }
+
+
+    /* ==========================================================================
+       3. ESTRUTURA GERAL (LAYOUT DE 2 COLUNAS: ÍNDICE CURATORIAL + ARTIGO)
+       ========================================================================== */
+    .doc-container {
+      display: flex;
+      min-height: calc(100vh - var(--header-h));
+      position: relative;
+    }
+
+    /* Barra Lateral Esquerda: Índice Curatorial Kunsthalle */
+    .doc-sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      border-right: var(--hairline);
+      background: var(--bg-museum);
+      position: sticky;
+      top: var(--header-h);
+      height: calc(100vh - var(--header-h));
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .sidebar-header {
+      padding: 16px 18px;
+      border-bottom: var(--hairline);
+      background: var(--bg-plinth);
+    }
+
+    .sidebar-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--ink-primary);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sidebar-search {
+      margin-top: 10px;
+      position: relative;
+    }
+
+    .sidebar-input {
+      width: 100%;
+      border: 1px solid var(--ink-primary);
+      background: #FFFFFF;
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-primary);
+      outline: none;
+    }
+
+    .sidebar-input:focus {
+      border-color: var(--accent-swiss);
+    }
+
+    .sidebar-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .nav-item {
+      border-bottom: var(--hairline-subtle);
+    }
+
+    .nav-link {
+      display: block;
+      padding: 10px 18px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.4;
+      color: var(--ink-muted);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: all 0.12s ease;
+    }
+
+    .nav-link:hover {
+      background: var(--bg-plinth);
+      color: var(--ink-primary);
+      border-left-color: var(--ink-primary);
+    }
+
+    .nav-link.active {
+      background: #FFFFFF;
+      color: var(--accent-swiss);
+      font-weight: 700;
+      border-left-color: var(--accent-swiss);
+    }
+
+    .nav-code {
+      display: inline-block;
+      font-size: 10px;
+      color: var(--accent-swiss);
+      margin-right: 6px;
+      font-weight: 700;
+    }
+
+    .sidebar-footer {
+      padding: 14px 18px;
+      border-top: var(--hairline);
+      background: var(--bg-plinth);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      line-height: 1.5;
+      color: var(--ink-muted);
+    }
+
+    /* Área Principal de Leitura */
+    .doc-main {
+      flex: 1;
+      padding: 48px 64px 120px;
+      max-width: 1120px;
+      margin: 0 auto;
+      background: var(--bg-museum);
+    }
+
+    /* ==========================================================================
+       4. PLINTO MONUMENTAL DA FICHA CATALOGRÁFICA (INTRODUÇÃO)
+       ========================================================================== */
+    .catalog-monumental-card {
+      border: var(--hairline);
+      background: var(--bg-card);
+      padding: 42px;
+      margin-bottom: 56px;
+      position: relative;
+    }
+
+    .catalog-supertitle {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--accent-swiss);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .catalog-title {
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 18px;
+      color: var(--ink-primary);
+    }
+
+    .catalog-subline {
+      font-size: 17px;
+      line-height: 1.55;
+      color: var(--ink-muted);
+      margin-bottom: 28px;
+      max-width: 900px;
+    }
+
+    /* Grade Curatorial de Metadados da Ficha */
+    .catalog-metadata-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1px;
+      background: var(--ink-primary);
+      border: var(--hairline);
+      margin: 28px 0;
+    }
+
+    .metadata-cell {
+      background: var(--bg-card);
+      padding: 14px 18px;
+    }
+
+    .metadata-label {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .metadata-value {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--ink-primary);
+    }
+
+    /* Callout de Resumo de 3 Segundos */
+    .summary-box-3sec {
+      border: 1px solid var(--ink-primary);
+      background: var(--bg-plinth);
+      padding: 24px;
+      margin: 28px 0;
+      position: relative;
+    }
+
+    .summary-box-header {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-swiss);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .summary-box-content {
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--ink-primary);
+    }
+
+    /* Faixa de Links Oficiais */
+    .official-links-ribbon {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: var(--hairline-subtle);
+    }
+
+    .official-link-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      background: var(--bg-plinth);
+      border: 1px solid var(--ink-primary);
+      padding: 8px 14px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.12s ease;
+    }
+
+    .official-link-pill:hover {
+      background: var(--ink-primary);
+      color: #FFFFFF;
+    }
+
+    /* ==========================================================================
+       5. PLACAS DE SEÇÃO CATALOGRÁFICA (SECTION PLATES)
+       ========================================================================== */
+    .doc-section {
+      margin-top: 72px;
+      padding-top: 36px;
+      border-top: var(--hairline);
+    }
+
+    .section-plate-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--ink-primary);
+      padding-bottom: 12px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .section-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--accent-swiss);
+      text-transform: uppercase;
+    }
+
+    h2.section-heading {
+      font-size: 27px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink-primary);
+      margin-top: 4px;
+    }
+
+    .section-acc-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-muted);
+      letter-spacing: 0.05em;
+    }
+
+    h3.subsection-heading {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--ink-primary);
+      margin: 36px 0 16px;
+      padding-left: 12px;
+      border-left: 3px solid var(--accent-swiss);
+    }
+
+    h4.tertiary-heading {
+      font-size: 15px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--ink-primary);
+      margin: 24px 0 12px;
+    }
+
+    p {
+      margin-bottom: 16px;
+      color: var(--ink-primary);
+    }
+
+    ul, ol {
+      margin: 0 0 20px 24px;
+      color: var(--ink-primary);
+    }
+
+    li {
+      margin-bottom: 8px;
+      line-height: 1.55;
+    }
+
+    /* Listas Customizadas Tipo Catálogo */
+    .catalog-list {
+      list-style: none;
+      margin: 20px 0;
+      padding: 0;
+      border: var(--hairline);
+      background: var(--bg-card);
+    }
+
+    .catalog-list-item {
+      padding: 14px 20px;
+      border-bottom: var(--hairline-subtle);
+      display: flex;
+      gap: 16px;
+    }
+
+    .catalog-list-item:last-child {
+      border-bottom: none;
+    }
+
+    .catalog-item-bullet {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-swiss);
+      min-width: 24px;
+    }
+
+    /* ==========================================================================
+       6. CONSOLES DE TERMINAL & BLOCOS DE CÓDIGO (DIETER RAMS BRAUN CHASSIS)
+       ========================================================================== */
+    .terminal-chassis {
+      border: var(--hairline);
+      background: var(--bg-terminal);
+      color: #EFECE6;
+      margin: 24px 0 28px;
+      position: relative;
+    }
+
+    .terminal-bezel {
+      background: #141414;
+      border-bottom: 1px solid #282828;
+      padding: 9px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #9E9D98;
+    }
+
+    .terminal-bezel-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .terminal-indicator {
+      width: 8px;
+      height: 8px;
+      border: 1px solid #FFF;
+      background: var(--accent-swiss);
+      display: inline-block;
+    }
+
+    .terminal-bezel-tag {
+      font-weight: 700;
+      color: #FFF;
+      letter-spacing: 0.05em;
+    }
+
+    .terminal-lang-badge {
+      font-size: 9.5px;
+      padding: 1px 6px;
+      border: 1px solid #444;
+      background: #1F1F1F;
+      color: #AAA;
+      text-transform: uppercase;
+    }
+
+    .terminal-copy-btn {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      background: #242424;
+      color: #FFF;
+      border: 1px solid #444;
+      padding: 4px 10px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.12s ease;
+    }
+
+    .terminal-copy-btn:hover {
+      background: var(--accent-swiss);
+      border-color: var(--accent-swiss);
+    }
+
+    pre.code-block {
+      margin: 0;
+      padding: 18px 20px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.6;
+      tab-size: 4;
+      color: #E5E7EB;
+      white-space: pre;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+
+    /* Código em linha */
+    p code, li code, td code {
+      background: var(--bg-plinth);
+      color: var(--ink-primary);
+      border: 1px solid rgba(10, 10, 10, 0.2);
+      padding: 2px 5px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Tokens de Realce Sintático Limpos */
+    .tok-kw { color: #F87171; font-weight: 700; }        /* Palavras-chave / def / import */
+    .tok-fn { color: #60A5FA; }                         /* Funções / métodos */
+    .tok-str { color: #FCD34D; }                        /* Strings / literais */
+    .tok-cm { color: #78716C; font-style: italic; }     /* Comentários */
+    .tok-num { color: #A78BFA; }                        /* Números */
+    .tok-cls { color: #34D399; font-weight: 700; }      /* Classes / tipos */
+
+    /* ==========================================================================
+       7. TABELAS EDITORIAIS SUÍÇAS (.SWISS-TABLE)
+       ========================================================================== */
+    .table-responsive-frame {
+      border: var(--hairline);
+      background: #FFFFFF;
+      overflow-x: auto;
+      margin: 24px 0 28px;
+    }
+
+    .swiss-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .swiss-table th {
+      background: var(--bg-plinth);
+      border-bottom: var(--hairline);
+      border-right: var(--hairline-subtle);
+      padding: 12px 16px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      color: var(--ink-primary);
+    }
+
+    .swiss-table td {
+      border-bottom: var(--hairline-subtle);
+      border-right: var(--hairline-subtle);
+      padding: 13px 16px;
+      line-height: 1.45;
+      color: var(--ink-primary);
+    }
+
+    .swiss-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .swiss-table th:last-child, .swiss-table td:last-child {
+      border-right: none;
+    }
+
+    .swiss-table tr:hover td {
+      background: rgba(10, 10, 10, 0.02);
+    }
+
+    .td-highlight {
+      background: rgba(217, 43, 43, 0.06);
+      font-weight: 700;
+      color: var(--accent-swiss);
+    }
+
+    .td-center {
+      text-align: center;
+    }
+
+    /* ==========================================================================
+       8. PLACAS DE ADVERTÊNCIA, NOTA & DECLARAÇÃO (LABORATORY PLATES)
+       ========================================================================== */
+    .lab-plate {
+      border: var(--hairline);
+      background: var(--bg-card);
+      padding: 20px 24px;
+      margin: 24px 0;
+      position: relative;
+    }
+
+    .lab-plate-note {
+      border-left: 4px solid var(--ink-primary);
+      background: var(--bg-plinth);
+    }
+
+    .lab-plate-warning {
+      border-left: 4px solid var(--accent-swiss);
+      background: #FFF;
+    }
+
+    .lab-plate-crypto {
+      border-left: 4px solid var(--accent-crypto);
+      background: #FFF;
+    }
+
+    .lab-plate-header {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lab-plate-tag {
+      padding: 2px 6px;
+      background: var(--ink-primary);
+      color: #FFF;
+      font-size: 9px;
+    }
+
+    .lab-plate-tag.red {
+      background: var(--accent-swiss);
+    }
+
+    .lab-plate-tag.blue {
+      background: var(--accent-crypto);
+    }
+
+    .lab-plate-content {
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+
+    /* Bloco reservado para texto jurídico */
+    .legal-reserved-block {
+      border: 1px dashed var(--ink-primary);
+      background: var(--bg-plinth);
+      padding: 20px;
+      margin: 20px 0;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.6;
+      color: var(--ink-primary);
+    }
+
+    /* ==========================================================================
+       9. DIAGRAMAS E INSTRUMENTOS GRÁFICOS PROPRIETÁRIOS
+       ========================================================================== */
+    .diagram-instrument-frame {
+      border: var(--hairline);
+      background: #FFFFFF;
+      padding: 28px;
+      margin: 28px 0;
+      position: relative;
+    }
+
+    .diagram-bezel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: var(--hairline);
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+
+    .diagram-title {
+      font-weight: 700;
+      color: var(--ink-primary);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* Régua Comparativa Dieter Rams 1:1 */
+    .comparative-ruler-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    .ruler-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .ruler-label-bar {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .ruler-track {
+      height: 28px;
+      background: var(--bg-plinth);
+      border: 1px solid var(--ink-primary);
+      position: relative;
+      display: flex;
+      align-items: stretch;
+    }
+
+    .ruler-fill {
+      background: var(--ink-primary);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .ruler-fill.swiss {
+      background: var(--accent-swiss);
+    }
+
+    .ruler-fill.hatch {
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(10, 10, 10, 0.12),
+        rgba(10, 10, 10, 0.12) 2px,
+        transparent 2px,
+        transparent 6px
+      );
+      color: var(--ink-muted);
+    }
+
+    .ruler-val {
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--ink-muted);
+      white-space: nowrap;
+      z-index: 1;
+    }
+
+    .ruler-ticks {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background-image: repeating-linear-gradient(
+        90deg,
+        rgba(10, 10, 10, 0.2) 0px,
+        rgba(10, 10, 10, 0.2) 1px,
+        transparent 1px,
+        transparent 10%
+      );
+    }
+
+    /* Diagrama ASCII / Esquemático Formatado */
+    .ascii-schematic-box {
+      border: 1px solid var(--ink-primary);
+      background: #FFFFFF;
+      padding: 20px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.45;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--ink-primary);
+    }
+
+    /* ==========================================================================
+       10. ELEMENTOS INTERATIVOS DO STUDIO E DIETER RAMS SWITCHES
+       ========================================================================== */
+    .hall-spec-card {
+      border: var(--hairline);
+      background: #FFFFFF;
+      margin: 20px 0;
+      padding: 24px;
+    }
+
+    .hall-spec-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: var(--hairline-subtle);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .hall-num {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent-swiss);
+    }
+
+    .hall-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .hall-steps {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .hall-step-item {
+      display: flex;
+      gap: 14px;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+
+    .hall-step-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--bg-plinth);
+      border: 1px solid var(--ink-primary);
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Botão Voltar ao Topo */
+    .back-to-top-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 28px;
+      background: var(--ink-primary);
+      color: #FFFFFF;
+      border: 1px solid var(--ink-primary);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 10px 16px;
+      cursor: pointer;
+      z-index: 999;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      box-shadow: 4px 4px 0px rgba(10, 10, 10, 0.2);
+    }
+
+    .back-to-top-btn:hover {
+      background: var(--accent-swiss);
+      border-color: var(--accent-swiss);
+    }
+
+    /* Notificação Toast Flutuante */
+    .toast-indicator {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink-primary);
+      color: #FFFFFF;
+      border: 1px solid var(--accent-swiss);
+      padding: 8px 18px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      z-index: 2000;
+      display: none;
+    }
+
+    /* ==========================================================================
+       11. RESPONSIVIDADE E MEDIA QUERIES
+       ========================================================================== */
+    @media (max-width: 960px) {
+      .doc-sidebar {
+        display: none;
+      }
+      .doc-main {
+        padding: 32px 20px 80px;
+      }
+      .catalog-monumental-card {
+        padding: 24px;
+      }
+      .catalog-title {
+        font-size: 28px;
+      }
+      .topbar-status {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       CABEÇALHO MONUMENTAL SUPERIOR
+       ========================================================================== -->
+  <header class="doc-topbar">
+    <div class="topbar-brand">
+      <span>BAGUET // SYSTEM SPEC</span>
+      <span class="topbar-badge">[v1.0.0]</span>
+    </div>
+
+        <!-- TABS DE NAVEGAÇÃO ENTRE DOCUMENTOS (ALINHADAS AO SIDEBAR) -->
+    <nav class="topbar-doc-tabs" aria-label="Navegação entre documentos">
+      <a href="guide.html" class="topbar-doc-tab active" id="tab-guide">
+        <span class="mono swiss-red">[01]</span>
+        <span>GUIA TÉCNICO</span>
+      </a>
+      <a href="terms.html" class="topbar-doc-tab " id="tab-terms">
+        <span class="mono swiss-red">[02]</span>
+        <span>TERMOS &amp; LICENÇA</span>
+      </a>
+      <a href="privacy.html" class="topbar-doc-tab " id="tab-privacy">
+        <span class="mono swiss-red">[03]</span>
+        <span>PRIVACIDADE</span>
+      </a>
+      <a href="litepaper.html" class="topbar-doc-tab " id="tab-litepaper">
+        <span class="mono swiss-red">[04]</span>
+        <span>LITEPAPER</span>
+      </a>
+    </nav>
+
+    <!-- ESPAÇADOR NEUTRO (SEM TEXTO DE STATUS CONFORME ESPECIFICAÇÃO) -->
+    <div class="topbar-status-spacer"></div>
+
+    <div class="topbar-actions">
+      <a href="https://github.com/soilore/baguet" target="_blank" rel="noopener" class="topbar-btn">
+        [REPO GITHUB]
+      </a>
+      <a href="https://baguet.soilore.com" target="_blank" rel="noopener" class="topbar-btn">
+        [PORTAL WEB]
+      </a>
+      <button class="topbar-btn" onclick="window.print()">
+        [DOWNLOAD]
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       ESTRUTURA PRINCIPAL: ÍNDICE CURATORIAL + ARTIGO DOCUMENTAL
+       ========================================================================== -->
+  <div class="doc-container">
+
+    <!-- BARRA LATERAL ESQUERDA (ÍNDICE CURATORIAL) -->
+    <aside class="doc-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">
+          <span>CATALOG INDEX</span>
+          <span class="mono swiss-red">[14 SEC + 2 ANX]</span>
+        </div>
+        <div class="sidebar-search">
+          <input type="text" id="sidebar-filter-input" class="sidebar-input mono" placeholder="FILTRAR GUIA TÉCNICO..." oninput="filterSidebarIndex()">
+        </div>
+      </div>
+
+      <ul class="sidebar-nav" id="sidebar-nav-list">
+        <li class="nav-item">
+          <a href="#introducao" class="nav-link active">
+            <span class="nav-code">[00]</span> Introdução & Escopo
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#para-quem-e" class="nav-link">
+            <span class="nav-code">[00.1]</span> Para quem é este guia
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#o-que-faz" class="nav-link">
+            <span class="nav-code">[00.2]</span> O que faz — e não promete
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#instalacao" class="nav-link">
+            <span class="nav-code">[01]</span> Instalação & Distribuição
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#primeiro-uso" class="nav-link">
+            <span class="nav-code">[02]</span> Primeiro uso com Python
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#funcoes-e-formatos" class="nav-link">
+            <span class="nav-code">[03]</span> Funções e formatos (.bgt*)
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#referencia-sdk" class="nav-link">
+            <span class="nav-code">[04]</span> Referência de uso do SDK
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#cli" class="nav-link">
+            <span class="nav-code">[05]</span> Interface Linha de Comando (CLI)
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#studio" class="nav-link">
+            <span class="nav-code">[06]</span> Tutorial do BAGUET Studio
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#benchmarks" class="nav-link">
+            <span class="nav-code">[07]</span> Benchmarks Industriais
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#licenciamento" class="nav-link">
+            <span class="nav-code">[08]</span> Licenciamento & BGTL1
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#atualizacao" class="nav-link">
+            <span class="nav-code">[09]</span> Atualização & Manutenção
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#troubleshooting" class="nav-link">
+            <span class="nav-code">[10]</span> Resolução de Problemas & FAQ
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#glossario" class="nav-link">
+            <span class="nav-code">[11]</span> Glossário Técnico
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="terms.html" class="nav-link">
+            <span class="nav-code">[12]</span> Termos de Uso (terms.html) &rarr;
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="privacy.html" class="nav-link">
+            <span class="nav-code">[13]</span> Política de Privacidade (privacy.html) &rarr;
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="terms.html#licenca-de-software" class="nav-link">
+            <span class="nav-code">[14]</span> Licença &amp; Copyright (terms.html) &rarr;
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#anexo-a" class="nav-link">
+            <span class="nav-code">[ANX-A]</span> Inventário SDK Python
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#anexo-b" class="nav-link">
+            <span class="nav-code">[ANX-B]</span> Operações Avançadas
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div><strong>INTEGRIDADE:</strong> SHA-256 BIT-EXACT</div>
+        <div><strong>ARQUITETURA:</strong> AIR-GAPPED 100%</div>
+        <div><strong>SUPORTE:</strong> CONTACT@SOILORE.COM</div>
+      </div>
+    </aside>
+
+    <!-- ARTIGO PRINCIPAL DE DOCUMENTAÇÃO -->
+    <main class="doc-main">
+
+      <!-- ======================================================================
+           FICHA CATALOGRÁFICA MONUMENTAL (ABERTURA)
+           ====================================================================== -->
+      <article class="catalog-monumental-card reg-mark top-left bottom-right" id="introducao">
+        <div class="catalog-supertitle">
+          <span>BAGUET TECHNICAL SPECIFICATION</span>
+          <span>//</span>
+          <span>SPEC-DOC-GUIDE</span>
+          <span>//</span>
+          <span>EDITION 2026.10</span>
+        </div>
+
+        <h1 class="catalog-title">
+          BAGUET v1.0.0 — Guia técnico de instalação, uso e operação
+        </h1>
+
+        <p class="catalog-subline">
+          Ecossistema de memória algébrica e compressão 100% sem perdas (<em>lossless</em>) projetado para executar buscas vetoriais, atenção e inferência diretamente sobre dados de IA comprimidos sem descompressão prévia — eliminando até 75% da sobrecarga de memória RAM e armazenamento com preservação matemática exata dos bits originais.
+        </p>
+
+        <!-- GRADE DE METADADOS CURATORIAIS -->
+        <div class="catalog-metadata-grid">
+          <div class="metadata-cell">
+            <div class="metadata-label">PROTÓTIPO & MOTOR</div>
+            <div class="metadata-value">BAGUET Core C-ABI v1.0.0</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">ACELERADORES SIMD</div>
+            <div class="metadata-value">AVX2 / FMA / ARM NEON</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">CERTIFICAÇÃO CRIPTO</div>
+            <div class="metadata-value">Ed25519 & AES-256-SIV</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">LICENCIAMENTO DUAL</div>
+            <div class="metadata-value">BUSL-1.1 AND MIT</div>
+          </div>
+        </div>
+
+        <!-- RESUMO EM 3 SEGUNDOS -->
+        <div class="summary-box-3sec">
+          <div class="summary-box-header">
+            <span>[GUIA TÉCNICO]</span>
+          </div>
+          <div class="summary-box-content">
+            <strong>Escopo:</strong> Este guia oficial de produção documenta a instalação multiplataforma (Pip, Conda e desktop), a integração via SDK Python, os comandos da CLI, a operação do BAGUET Studio, a governança offline e a resolução de problemas do BAGUET v1.0.0.
+          </div>
+        </div>
+
+        </article>
+
+      <!-- ======================================================================
+           SEÇÃO: PARA QUEM É ESTE GUIA
+           ====================================================================== -->
+      <section class="doc-section" id="para-quem-e">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[CURADORIA DE PÚBLICO]</div>
+            <h2 class="section-heading">Para quem é este guia</h2>
+          </div>
+          <div class="section-acc-num">SEC.CAT-00.1</div>
+        </div>
+
+        <ul class="catalog-list">
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[01]</span>
+            <div>
+              <strong>Gestores e equipes de produto:</strong> entendam em que problemas o BAGUET atua, a garantia incondicional de zero lock-in e como avaliar resultados reais de economia de infraestrutura.
+            </div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[02]</span>
+            <div>
+              <strong>Usuários do Studio:</strong> operem com facilidade cada uma das 5 salas da interface visual, conheçam os atalhos de produtividade e saibam alternar entre demonstração e produção.
+            </div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[03]</span>
+            <div>
+              <strong>Engenheiros de Software e IA:</strong> integrem os namespaces <code>core</code>, <code>ai</code>, <code>media</code>, <code>license</code> e <code>studio</code> aos seus pipelines de dados e modelos tensoriais.
+            </div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[04]</span>
+            <div>
+              <strong>Operadores de Infraestrutura e SecOps:</strong> instalem pacotes verificados, configurem licenças criptográficas offline e diagnostiquem incidentes sem comprometer credenciais.
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ======================================================================
+           SEÇÃO: O QUE O BAGUET FAZ — E O QUE NÃO PROMETE
+           ====================================================================== -->
+      <section class="doc-section" id="o-que-faz">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[ESCOPO MATEMÁTICO & LIMITES]</div>
+            <h2 class="section-heading">O que o BAGUET faz — e o que não promete</h2>
+          </div>
+          <div class="section-acc-num">SEC.CAT-00.2</div>
+        </div>
+
+        <p>O BAGUET oferece:</p>
+
+        <ul class="catalog-list">
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[+]</span>
+            <div>compressão e restauração universal de bytes com garantia matemática de integridade bit-exact via SHA-256;</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[+]</span>
+            <div>execução direta sobre dados comprimidos (<em>Compute-on-Compressed-Data</em>), incluindo KV cache de LLMs, embeddings para RAG, matrizes de pesos e checkpoints diferenciais;</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[+]</span>
+            <div>caminhos lossless dedicados para formatos de áudio, imagem e vídeo estruturados;</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[+]</span>
+            <div>contêineres indexados para acesso a registros em tempo <em>O(1)</em> e motor de streaming paralelo multi-bloco;</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[+]</span>
+            <div>governança criptográfica de licenças offline (<code>Ed25519</code>), recibos periciais e ferramentas locais de auditoria de ROI;</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[+]</span>
+            <div>uma interface visual e interativa local chamada <strong>BAGUET Studio</strong>.</div>
+          </li>
+        </ul>
+
+        <div class="lab-plate lab-plate-note">
+          <div class="lab-plate-header">
+            <span class="lab-plate-tag">DEFINIÇÃO FORMAL</span>
+            <span>LOSSLESS RIGOROSO & LIMITES DA TEORIA DA INFORMAÇÃO</span>
+          </div>
+          <div class="lab-plate-content">
+            A designação <strong>lossless</strong> se aplica rigorosamente às operações que preservam a integridade integral dos dados originais e cuja restauração reproduz a mesma sequência de bits. Certos modos progressivos disponibilizam camadas base de menor precisão para inicialização rápida ou visualização; essas camadas são parciais e o refinamento exato permanece acessível sob demanda. Como em qualquer sistema de teoria da informação, dados de alta entropia ou já comprimidos podem apresentar pequeno acréscimo de cabeçalho.
+          </div>
+        </div>
+
+        <p>
+          O BAGUET não substitui um modelo de linguagem ou visão nem executa, por si só, o treinamento completo de redes neurais. Ele atua como o substrato de alta eficiência para armazenamento e computação sobre representações tensoriais e binárias.
+        </p>
+
+        <!-- DIAGRAMA VISUAL 1: ESQUEMA DE ATUAÇÃO SUBSTRATO -->
+        <div class="diagram-instrument-frame reg-mark top-left bottom-right">
+          <div class="diagram-bezel">
+            <span class="diagram-title">ESQUEMA DE CAMADAS ARQUITETÔNICAS // SUBSTRATO ALGÉBRICO</span>
+            <span class="mono">[DIETER RAMS MODULAR AXIOM]</span>
+          </div>
+          <div class="ascii-schematic-box">
++-------------------------------------------------------------------------------------------------+
+|                       CAMADA DE APLICAÇÃO (LLM / RAG / MODELOS TENSORIAIS)                      |
+|                 PyTorch, vLLM, TensorRT, Hugging Face, FAISS, Milvus, Qdrant                    |
++-------------------------------------------------------------------------------------------------+
+                                                |
+                                                v
++-------------------------------------------------------------------------------------------------+
+|               SUBSTRATO ALGÉBRICO BAGUET (COMPUTE-ON-COMPRESSED-DATA KERNEL)                    |
+|   • Sub-linear Top-K Search (Cauchy-Schwarz)   • Flash-SDPA Attention on Compressed KV Cache    |
+|   • Orthogonal Bit-Planes (Sign/Exp/Mantissa)  • Reversible Differential Checkpoints (BGTD6)    |
+|   • Virtual Slab Pool O(1)                     • Native SIMD Accelerators (AVX2 / NEON)         |
++-------------------------------------------------------------------------------------------------+
+                                                |
+                                                v
++-------------------------------------------------------------------------------------------------+
+|                         HARDWARE LOCAL & INFRAESTRUTURA AIR-GAPPED                              |
+|                Memória RAM / VRAM, SSD NVMe, Processadores x86_64 / Apple Silicon               |
++-------------------------------------------------------------------------------------------------+</div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           SEÇÃO 1: INSTALAÇÃO E CANAIS DE DISTRIBUIÇÃO
+           ====================================================================== -->
+      <section class="doc-section" id="instalacao">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[CANAL DE PROVISIONAMENTO]</div>
+            <h2 class="section-heading">1. Instalação e Canais de Distribuição</h2>
+          </div>
+          <div class="section-acc-num">SEC.CAT-01</div>
+        </div>
+
+        <h3 class="subsection-heading">Requisitos de Sistema</h3>
+        <ul class="catalog-list">
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[SYS]</span>
+            <div><strong>Python:</strong> Versão <strong>3.11 ou superior</strong> (obrigatório para conformidade de tipagem e buffers nativos C-ABI).</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[REQ]</span>
+            <div><strong>Dependências de Execução:</strong> <code>numpy &gt;= 1.24</code> e <code>cryptography &gt;= 41</code>.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[OPT]</span>
+            <div><strong>Dependências Opcionais:</strong> <code>torch &gt;= 2.1</code> e <code>ml_dtypes &gt;= 0.3</code> (necessários apenas para integração direta com tensores PyTorch e suporte a BFloat16).</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[ENV]</span>
+            <div><strong>Ambientes Homologados:</strong> macOS (Apple Silicon <code>arm64</code> e Intel <code>x86_64</code>), Linux (<code>glibc &gt;= 2.31</code>, <code>x86_64</code> e <code>aarch64</code>) e Windows 10/11 (64-bit x64).</div>
+          </li>
+        </ul>
+
+        <h3 class="subsection-heading">1.1 Instalação via Pip (Índice de Pacotes Python)</h3>
+        <p>Para instalar a distribuição oficial com o motor nativo, a CLI e o BAGUET Studio:</p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">CONSOLE // LINUX & macOS BASH</span>
+              <span class="terminal-lang-badge">bash</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-bash">python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install baguet</code></pre>
+        </div>
+
+        <p>No Windows (PowerShell):</p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">CONSOLE // WINDOWS POWERSHELL</span>
+              <span class="terminal-lang-badge">powershell</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-powershell">py -3.11 -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install baguet</code></pre>
+        </div>
+
+        <h4 class="tertiary-heading">Instalação com suporte opcional a PyTorch</h4>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">CONSOLE // PYTORCH EXTRA</span>
+              <span class="terminal-lang-badge">bash</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-bash">python -m pip install "baguet[torch]"</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">1.2 Instalação via Ecossistema Conda / Mamba</h3>
+        <p>Para estações de trabalho de ciência de dados e clusters corporativos gerenciados via Conda:</p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">CONSOLE // CONDA-FORGE</span>
+              <span class="terminal-lang-badge">bash</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-bash"># Criação do ambiente dedicado
+conda create -n baguet-env python=3.11 -y
+conda activate baguet-env
+
+# Instalação a partir do canal conda-forge
+conda install -c conda-forge baguet</code></pre>
+        </div>
+
+        <p class="text-muted mono" style="font-size: 12px; margin-top: -12px; margin-bottom: 24px;">
+          <em>(Nota de distribuição: a receita de empacotamento provisiona automaticamente as dependências binárias <code>zlib</code>, <code>numpy &gt;= 1.24</code> e <code>cryptography &gt;= 41</code>, registrando o pacote sob o identificador canônico <code>baguet-sdk</code> com alias executável <code>baguet</code>).</em>
+        </p>
+
+        <h3 class="subsection-heading">1.3 Instaladores Desktop e Integração com o Sistema Operacional</h3>
+        <p>Para usuários que preferem utilizar o BAGUET Studio integrado ao sistema operacional sem gerenciar ambientes virtuais pelo terminal:</p>
+
+        <ul class="catalog-list">
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[OSX]</span>
+            <div><strong>macOS Universal:</strong> pacote <code>.dmg</code> compatível com Apple Silicon (M1/M2/M3/M4) e Intel, incluindo Quick Action para o Finder.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[WIN]</span>
+            <div><strong>Windows x64:</strong> instalador executável com integração ao menu de contexto do Windows Explorer.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[LNX]</span>
+            <div><strong>Linux:</strong> pacote AppImage / entrada <code>.desktop</code> compatível com o padrão XDG.</div>
+          </li>
+        </ul>
+
+        <p>Caso você já tenha instalado o pacote via Pip ou Conda, gere os arquivos e atalhos de integração com o botão direito do seu sistema operacional executando:</p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">CONSOLE // DESKTOP PROVISIONING</span>
+              <span class="terminal-lang-badge">bash</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-bash">baguet install-desktop --target-dir ./integracao-baguet</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">1.4 Confirmar a Instalação</h3>
+        <p>Valide se o SDK e o núcleo nativo estão operacionais:</p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">CONSOLE // VERIFICAÇÃO OPERACIONAL</span>
+              <span class="terminal-lang-badge">bash</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-bash">python -c "from baguet_sdk import core; engine = core.BaguetEngine(); print('BAGUET pronto')"
+baguet self-test</code></pre>
+        </div>
+
+        <p>
+          O motor carrega o backend compilado em Rust por padrão, ativando aceleração SIMD <code>AVX2/FMA</code> em processadores <code>x86_64</code> ou <code>NEON</code> em arquiteturas <code>ARM64</code>. O auto-teste (<code>self-test</code>) executa uma bateria determinística que valida todos os subsistemas criptográficos e tensoriais em milissegundos.
+        </p>
+      </section>
+
+      <!-- ======================================================================
+           SEÇÃO 2: PRIMEIRO USO COM PYTHON
+           ====================================================================== -->
+      <section class="doc-section" id="primeiro-uso">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[INICIALIZAÇÃO DO SDK]</div>
+            <h2 class="section-heading">2. Primeiro uso com Python</h2>
+          </div>
+          <div class="section-acc-num">SEC.CAT-02</div>
+        </div>
+
+        <p>
+          A fachada pública <code>baguet_sdk</code> disponibiliza cinco namespaces estruturados: <code>core</code>, <code>ai</code>, <code>media</code>, <code>license</code> e <code>studio</code>. O exemplo abaixo demonstra a compressão e restauração com verificação de integridade:
+        </p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // EXEMPLO FUNDAMENTAL</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">from baguet_sdk import core
+
+engine = core.BaguetEngine()
+original = b"Dados de exemplo para o primeiro uso do BAGUET."
+
+packet, useful_bits = engine.compress_bytes(original)
+restored = engine.decompress_bytes(packet)
+
+assert restored == original
+print(f"Entrada: {len(original)} B; pacote: {len(packet)} B; bits uteis: {useful_bits}")</code></pre>
+        </div>
+
+        <p>
+          <code>compress_bytes</code> retorna uma tupla: o pacote binário compactado e a quantidade de bits úteis codificados. <code>decompress_bytes</code> retorna os bytes exatos restaurados. Recomenda-se criar uma instância única de <code>BaguetEngine</code> para compartilhar configurações, licenças e limites ao longo da aplicação.
+        </p>
+
+        <p>O namespace também permite chamadas funcionais diretas passando <code>engine=engine</code>:</p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // CHAMADA FUNCIONAL DIRETA</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">from baguet_sdk import core
+
+engine = core.BaguetEngine()
+packet, bits = core.compress_bytes(b"amostra", engine=engine)
+restored = core.decompress_bytes(packet, engine=engine)</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">Hierarquia de Exceções do BAGUET</h3>
+        <ul class="catalog-list">
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[EXC]</span>
+            <div><code>BaguetError</code>: classe-base para exceções operacionais do protocolo.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[WARN]</span>
+            <div><code>BaguetContingencyWarning</code>: aviso emitido quando uma contingência não-fatal ocorre.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[FAIL]</span>
+            <div><code>BaguetIntegrityError</code>: disparado quando um pacote está malformado, truncado ou com hash SHA-256 divergente (<em>fail-closed</em>).</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[SEC]</span>
+            <div><code>BaguetSecurityError</code>: disparado quando uma política de segurança, chave BGT-AE ou licença é violada.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[PRIOR]</span>
+            <div><code>BaguetPriorMismatchError</code>: o prior de domínio informado difere daquele exigido pelo arquivo.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[NOTF]</span>
+            <div><code>BaguetNotFoundError</code>: o registro ou chave solicitada não existe no contêiner (compatível com <code>KeyError</code>).</div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ======================================================================
+           SEÇÃO 3: FUNÇÕES E FORMATOS
+           ====================================================================== -->
+      <section class="doc-section" id="funcoes-e-formatos">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[TAXONOMIA DE CONTÊINERES]</div>
+            <h2 class="section-heading">3. Funções e formatos</h2>
+          </div>
+          <div class="section-acc-num">SEC.CAT-03</div>
+        </div>
+
+        <h3 class="subsection-heading">Visão geral dos Namespaces do SDK</h3>
+        <div class="table-responsive-frame">
+          <table class="swiss-table">
+            <thead>
+              <tr>
+                <th>Área</th>
+                <th>O que resolve</th>
+                <th>Namespace</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Bytes, arquivos e inspeção</strong></td>
+                <td>Comprimir, restaurar, abrir envelopes compartilháveis e inspecionar contêineres</td>
+                <td class="mono">baguet_sdk.core</td>
+              </tr>
+              <tr>
+                <td><strong>Inteligência Artificial</strong></td>
+                <td>KV cache, embeddings, busca Top-K, atenção Flash-SDPA, pesos, checkpoints, tensores progressivos e ranks</td>
+                <td class="mono">baguet_sdk.ai</td>
+              </tr>
+              <tr>
+                <td><strong>Multimídia e Transcodificação</strong></td>
+                <td>Imagens RGB, áudio PCM16, vídeo 3D e reversão bit-exact de formatos suportados</td>
+                <td class="mono">baguet_sdk.media</td>
+              </tr>
+              <tr>
+                <td><strong>Licença e Governança</strong></td>
+                <td>Validação de licenças offline BGTL1, recibos de auditoria Ed25519 e manifestos de atualização</td>
+                <td class="mono">baguet_sdk.license</td>
+              </tr>
+              <tr>
+                <td><strong>Interface e Operação Local</strong></td>
+                <td>Servidor do Studio, cálculo forense de ROI, internacionalização e atalhos de desktop</td>
+                <td class="mono">baguet_sdk.studio</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="subsection-heading">Catálogo de Extensões Oficiais</h3>
+        <div class="table-responsive-frame">
+          <table class="swiss-table">
+            <thead>
+              <tr>
+                <th>Extensão</th>
+                <th class="td-center">Identificador Magic</th>
+                <th>Uso principal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono td-highlight">.bgt</td>
+                <td class="mono td-center">BGT...</td>
+                <td>Pacote universal para qualquer fluxo de dados ou arquivos individuais</td>
+              </tr>
+              <tr>
+                <td class="mono td-highlight">.bgts</td>
+                <td class="mono td-center">BGTS5\x02</td>
+                <td>Contêiner em blocos paralelos com CRC32 por frame para arquivos volumosos</td>
+              </tr>
+              <tr>
+                <td class="mono td-highlight">.bgtv</td>
+                <td class="mono td-center">BGTV5\x03</td>
+                <td>Cofre de objetos (Slab Pool) com recuperação aleatória em tempo <em>O(1)</em></td>
+              </tr>
+              <tr>
+                <td class="mono td-highlight">.bgtt</td>
+                <td class="mono td-center">BGTT6\x01</td>
+                <td>Catálogo indexado de tensores com extração seletiva via <code>mmap</code> zero-copy</td>
+              </tr>
+              <tr>
+                <td class="mono td-highlight">.bgtd</td>
+                <td class="mono td-center">BGTD6\x01</td>
+                <td>Checkpoint diferencial reversível contra pesos de referência (fine-tuning / LoRA)</td>
+              </tr>
+              <tr>
+                <td class="mono td-highlight">.bgtp</td>
+                <td class="mono td-center">BGTP6\x01</td>
+                <td>Tensor progressivo (fluxo base de inicialização rápida + resíduo exato)</td>
+              </tr>
+              <tr>
+                <td class="mono td-highlight">.bgtu</td>
+                <td class="mono td-center">BGTU6\x01</td>
+                <td>Transcodificação reversível de formatos pré-comprimidos (PNG, WAV, NPY, gzip, zlib)</td>
+              </tr>
+              <tr>
+                <td class="mono td-highlight">.bgtpr</td>
+                <td class="mono td-center">BPD5</td>
+                <td>Dicionário de prior de domínio treinado para compactação de padrões repetitivos</td>
+              </tr>
+              <tr>
+                <td class="mono td-highlight">.bgttile</td>
+                <td class="mono td-center">BGTTILE1</td>
+                <td>Matriz com particionamento espacial em blocos 2D</td>
+              </tr>
+              <tr>
+                <td class="mono td-highlight">.bgt.html</td>
+                <td class="mono td-center">&lt;!DOCTYPE...</td>
+                <td>Envelope web autônomo com leitor JavaScript integrado para compartilhamento</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           SEÇÃO 4: REFERÊNCIA DE USO DO SDK
+           ====================================================================== -->
+      <section class="doc-section" id="referencia-sdk">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[REFERÊNCIA DE ENGENHARIA]</div>
+            <h2 class="section-heading">4. Referência de uso do SDK</h2>
+          </div>
+          <div class="section-acc-num">SEC.CAT-04</div>
+        </div>
+
+        <h3 class="subsection-heading">4.1 Bytes, envelopes e inspeção</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // CORE BYTES & ENVELOPES</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">from baguet_sdk import core
+
+engine = core.BaguetEngine()
+raw = b"conteudo de producao para arquivamento"
+packet, bit_count = engine.compress_bytes(raw)
+assert engine.decompress_bytes(packet) == raw
+
+# Envelopamento web autonomo
+html_envelope = core.BaguetShareableEnvelope.pack_html(packet, locale="pt")
+assert core.BaguetShareableEnvelope.unpack_html(html_envelope) == packet</code></pre>
+        </div>
+
+        <p>Para inspecionar metadados de qualquer contêiner em tempo <em>O(1)</em> sem descomprimir seu conteúdo:</p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // INSPEÇÃO DE CABEÇALHO O(1)</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">from baguet_sdk import core
+
+# Cria um contêiner de exemplo para inspeção imediata
+pacote, _ = core.compress_bytes(b"dados de telemetria do motor BAGUET")
+with open("arquivo.bgt", "wb") as f:
+    f.write(pacote)
+
+info = core.inspect_file_info("arquivo.bgt")
+print(f"Formato: {info.get('container')} | Acelerador: {info.get('accelerator')}")</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">4.2 IA: tensores e KV cache</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // KV CACHE COMPRESSION</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">import numpy as np
+from baguet_sdk import core, ai
+
+engine = core.BaguetEngine()
+kv = np.arange(2 * 8 * 16, dtype=np.float16).reshape(2, 8, 16)
+
+packet, bits = ai.compress_kv_cache(kv, engine=engine)
+restored = ai.decompress_kv_cache(packet, engine=engine)
+
+assert restored.shape == kv.shape
+assert restored.dtype == kv.dtype
+assert restored.tobytes() == kv.tobytes()</code></pre>
+        </div>
+
+        <!-- DIAGRAMA 2: BIT-PLANE ORTHOGONAL DECOMPOSITION -->
+        <div class="diagram-instrument-frame reg-mark top-left bottom-right">
+          <div class="diagram-bezel">
+            <span class="diagram-title">DECOMPOSIÇÃO ORTOGONAL DE PLANOS DE BITS // IEEE 754 COMPRESSÃO DIRETA</span>
+            <span class="mono">[ALGEBRAIC PROJECTION]</span>
+          </div>
+          <div class="ascii-schematic-box">
+TENSOR IEEE 754 (FP16 / BF16 / FP32):
+[ S | E E E E E | M M M M M M M M M M ] -> 1 Bit Sinal + 5 Bits Expoente + 10 Bits Mantissa
+                                |
+                                v
++-------------------------------------------------------------------------------------------------+
+| PLANO DE BITS 0 (SINAL):       [ S0  S1  S2  ...  Sn ] -> Bitstream denso (Entropia mínima)     |
+| PLANO DE BITS 1 (EXPOENTE):    [ E0  E1  E2  ...  En ] -> Faixas de magnitude agrupadas         |
+| PLANOS DE BITS 2..K (MANTISSA):[ M0  M1  M2  ...  Mn ] -> Bits de precisão e ruído térmico      |
++-------------------------------------------------------------------------------------------------+
+                                |
+                                v
+Busca vetorial RAG e Atenção SDPA avaliam Expoentes e Bits Altos PRIMEIRO:
+Poda de blocos irrelevantes por Cauchy-Schwarz sem reconstruir a mantissa inferior!</div>
+        </div>
+
+        <h3 class="subsection-heading">4.3 IA: embeddings e busca Top-K sub-linear</h3>
+        <p>
+          Para garantir alinhamento com os registradores vetoriais SIMD do motor de busca, matrizes de embeddings para busca e sketch index devem ser criadas em <code>np.float16</code> ou <code>bfloat16</code>:
+        </p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // TOP-K VETORIAL SUB-LINEAR</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">import numpy as np
+from baguet_sdk import core, ai
+
+engine = core.BaguetEngine()
+# Embeddings FP16 (128 vetores de 32 dimensoes)
+embeddings = np.random.default_rng(7).normal(size=(128, 32)).astype(np.float16)
+query = np.random.default_rng(8).normal(size=(32,)).astype(np.float32)
+
+packed, _ = ai.compress_embeddings(embeddings, engine=engine)
+restored = ai.decompress_embeddings(packed, engine=engine)
+assert np.array_equal(restored, embeddings)
+
+# 1. Busca vetorial top-k direta sobre dados comprimidos
+indices, scores = ai.search_compressed_embeddings_topk(
+    packed, query, k=5, metric="dot", engine=engine
+)
+
+# 2. Construcao de sketch index e busca sub-linear com poda exata de subespacos
+sketch = ai.build_embedding_sketch_index(packed, block_size=16, engine=engine)
+pruned_indices, pruned_scores = ai.query_compressed_embeddings_topk(
+    packed, query, k=5, metric="dot", sketch_index=sketch, engine=engine
+)</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">4.4 IA: atenção em KV compactado e Offloader</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // ATENÇÃO KV DIRETA</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">import numpy as np
+from baguet_sdk import core, ai
+
+engine = core.BaguetEngine()
+keys = np.ones((1, 8, 16), dtype=np.float16)
+values = np.arange(1 * 8 * 16, dtype=np.float16).reshape(1, 8, 16)
+query = np.ones((1, 16), dtype=np.float32)
+
+key_packet, _ = engine.compress_kv_cache(keys)
+value_packet, _ = engine.compress_kv_cache(values)
+
+context, weights = ai.compressed_kv_attention_forward(
+    key_packet, value_packet, query, engine=engine
+)</code></pre>
+        </div>
+
+        <p>Para gerenciar blocos de contexto histórico com armazenamento intermediário sob demanda:</p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // KV CACHE OFFLOADER</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">import numpy as np
+from baguet_sdk import core, ai
+
+engine = core.BaguetEngine()
+offloader = ai.BaguetKVCacheOffloader(engine=engine)
+offloader.put_block(0, np.ones((8, 16), dtype=np.float16), np.ones((8, 16), dtype=np.float16))
+keys, values = offloader.get_block(0)
+context, weights = offloader.attention_on_offloaded_blocks(
+    [0], np.ones((16,), dtype=np.float32)
+)</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">4.5 IA: camadas lineares comprimidas</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // CAMADA LINEAR NUMPY</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">import numpy as np
+from baguet_sdk import ai, core
+
+engine = core.BaguetEngine()
+weights = np.arange(64 * 64, dtype=np.float16).reshape(64, 64)
+bias = np.zeros(64, dtype=np.float32)
+x = np.ones((64,), dtype=np.float32)
+
+layer = ai.BaguetCompressedLinear.from_numpy(weights, bias, engine=engine)
+y = layer.forward(x, full_precision=True)
+report = layer.memory_footprint_report()
+print(f"Reducao de memoria: {report['reduction_pct']:.1f}%")</code></pre>
+        </div>
+
+        <p>Com PyTorch (quando o extra <code>[torch]</code> estiver instalado):</p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // PYTORCH LINEAR MODULE</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">import torch
+from baguet_sdk import ai, core
+
+engine = core.BaguetEngine()
+torch_linear = torch.nn.Linear(3, 4).eval()
+layer = ai.BaguetCompressedLinear.from_torch(torch_linear, engine=engine)
+y = layer(torch.ones((1, 3), dtype=torch.float32))</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">4.6 IA: SafeTensors, delta e tensores progressivos</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // SAFETENSORS & DELTA CHECKPOINT</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">import numpy as np
+from baguet_sdk import core, ai
+
+engine = core.BaguetEngine()
+base = {"layer.weight": np.zeros((4, 4), dtype=np.float32)}
+updated = {"layer.weight": np.ones((4, 4), dtype=np.float32)}
+
+# Empacotamento de dicionario
+archive, _ = ai.compress_safetensors_dict(updated, engine=engine)
+all_tensors = ai.decompress_safetensors_dict(archive, engine=engine)
+
+# Checkpoint diferencial reversivel (BGTD6)
+delta, metadata = ai.compress_safetensors_delta(updated, base, engine=engine)
+reconstructed = ai.decompress_safetensors_delta(delta, base, engine=engine)
+
+# Tensor progressivo (BGTP6)
+progressive, progressive_metadata = engine.compress_tensor_progressive(
+    updated["layer.weight"], trim_mantissa_bits=16
+)
+preview = engine.decompress_tensor_progressive(progressive, full_precision=False)
+exact = engine.decompress_tensor_progressive(progressive, full_precision=True)
+assert np.array_equal(exact, updated["layer.weight"])</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">4.7 IA: ranks e reconstrução</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // SURPRISAL RANKS</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">from baguet_sdk import core
+
+engine = core.BaguetEngine()
+ranks, zero_ratio = engine.extract_surprisal_ranks(b"texto estruturado de telemetria")
+restored_bytes = engine.reconstruct_from_ranks(ranks)
+assert restored_bytes == b"texto estruturado de telemetria"</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">4.8 Multimídia e transcodificação</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // MULTIMÍDIA ESTRUTURADA</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">import numpy as np
+from baguet_sdk import core, media
+
+engine = core.BaguetEngine()
+
+# Imagem RGB 24-bit
+image = np.zeros((32, 48, 3), dtype=np.uint8)
+packet_img, _ = media.compress_image_rgb(image, engine=engine)
+assert np.array_equal(image, media.decompress_image_rgb(packet_img, engine=engine))
+
+# Audio PCM16
+samples = np.zeros((16_000,), dtype=np.int16)
+packet_aud, _ = media.compress_audio_pcm16(samples, engine=engine)
+assert np.array_equal(samples, media.decompress_audio_pcm16(packet_aud, engine=engine))
+
+# Video volumetrico 3D (T, H, W)
+video = np.zeros((4, 16, 16), dtype=np.uint8)
+packet_vid, _ = media.compress_video_3d(video, engine=engine)
+assert np.array_equal(video, media.decompress_video_3d(packet_vid, engine=engine))</code></pre>
+        </div>
+
+        <p>Transcodificação reversível de contêineres:</p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // TRANSCODIFICAÇÃO BGTU6</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">import gzip
+from baguet_sdk import core, media
+
+engine = core.BaguetEngine()
+dados_brutos = b"conteudo do log arquivado"
+source_container = gzip.compress(dados_brutos)
+packet, metadata = media.transcode_compressed(source_container, engine=engine)
+
+# Reconstrução do contêiner com descompressão bit-exact nos dados originais
+restored_container = media.untranscode_compressed(
+    packet, reconstruct_container=True, engine=engine
+)
+assert gzip.decompress(restored_container) == dados_brutos
+
+# Ou extração direta do payload bruto descompactado
+restored_raw = media.untranscode_compressed(
+    packet, reconstruct_container=False, engine=engine
+)
+assert bytes(restored_raw) == dados_brutos</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">4.9 Prior de domínio</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // TREINAMENTO DE PRIOR</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">from baguet_sdk import core
+
+corpus = [
+    b"event=login status=ok",
+    b"event=logout status=ok",
+]
+prior = core.BaguetPriorTrainer().fit(corpus)
+engine_with_prior = core.BaguetEngine(prior=prior)
+packet, _ = engine_with_prior.compress_bytes(corpus[0])
+assert engine_with_prior.decompress_bytes(packet) == corpus[0]</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">4.10 Cofre de objetos (Slab) e streaming</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // COFRE SLAB O(1)</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">from baguet_sdk import core
+
+engine = core.BaguetEngine()
+pool = core.BaguetVirtualSlabPool(engine)
+pool.put_file("model/layer0", b"pesos de exemplo")
+assert pool.get_file("model/layer0") == b"pesos de exemplo"
+pool.save_to_disk("arquivo.bgtv")</code></pre>
+        </div>
+
+        <p>Streaming para arquivos grandes com consumo de memória delimitado:</p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // MOTOR DE STREAMING MULTI-THREAD</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">from pathlib import Path
+from baguet_sdk import core
+
+engine = core.BaguetEngine()
+stream = core.BaguetStreamEngine(engine)
+
+# Amostra de arquivo para teste de streaming
+Path("entrada.bin").write_bytes(b"BLOCO-DE-DADOS-STREAMING-" * 1000)
+
+stats = stream.compress_stream(
+    "entrada.bin", "entrada.bgts", chunk_size=4 * 1024 * 1024, max_workers=4
+)
+restored_stats = stream.decompress_stream("entrada.bgts", "restaurada.bin")
+assert Path("restaurada.bin").read_bytes() == Path("entrada.bin").read_bytes()</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">4.11 Licenças e recibos periciais</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // RECIBO CRIPTOGRÁFICO ED25519</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">from baguet_sdk import core, license, studio
+
+engine = core.BaguetEngine()
+raw = b"dados de auditoria"
+packet, _ = engine.compress_bytes(raw)
+restored = engine.decompress_bytes(packet)
+
+# Emissao e verificacao de recibo forense
+receipt = license.BaguetCryptographicReceipt.create(raw, packet, restored)
+assert license.BaguetCryptographicReceipt.verify_receipt(receipt)</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">4.12 Auditoria forense de ROI</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // AUDITORIA FORENSE DE ROI</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">from pathlib import Path
+from baguet_sdk import core, studio
+
+engine = core.BaguetEngine()
+
+# Prepara diretório de amostras locais para a auditoria
+dados_dir = Path("./dados")
+dados_dir.mkdir(exist_ok=True)
+(dados_dir / "amostra.log").write_text("Registro de telemetria " * 100, encoding="utf-8")
+
+report = studio.audit_roi(
+    engine,
+    dados_dir,
+    scale_projection_tb=10.0,
+    cloud_storage_cost_per_gb_month=0.023,
+    ram_vram_cost_per_gb_month=6.50,
+)
+print(f"Arquivos: {report['files_scanned']} | Reducao: {report['baguet_savings_pct']:.1f}%")</code></pre>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           SEÇÃO 5: INTERFACE DE LINHA DE COMANDO (CLI)
+           ====================================================================== -->
+      <section class="doc-section" id="cli">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[UTILITÁRIO DE TERMINAL]</div>
+            <h2 class="section-heading">5. Interface de linha de comando (CLI)</h2>
+          </div>
+          <div class="section-acc-num">SEC.CAT-05</div>
+        </div>
+
+        <p>Consulte <code>baguet --help</code> ou <code>baguet COMANDO --help</code> para inspecionar todas as opções.</p>
+
+        <h3 class="subsection-heading">Operações fundamentais de arquivo</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">CLI // OPERAÇÕES FUNDAMENTAIS</span>
+              <span class="terminal-lang-badge">bash</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-bash"># Comprimir arquivo para .bgt
+baguet compress entrada.bin saida.bgt
+
+# Descomprimir com validacao de hash SHA-256
+baguet decompress saida.bgt restaurada.bin
+
+# Inspecionar cabecalho O(1) de qualquer arquivo Baguet
+baguet info saida.bgt</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">Modo rápido, envelope compartilhável e recibo pericial</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">CLI // PIPELINE RÁPIDO & CERTIFICADOS</span>
+              <span class="terminal-lang-badge">bash</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-bash"># Modo rapido para pipelines de alto throughput
+baguet compress entrada.bin saida.bgt --fast-mode
+
+# Envelope HTML compartilhavel (abre em qualquer navegador sem software instalado)
+baguet compress entrada.bin saida.bgt.html --shareable
+
+# Comprimir emitindo recibo pericial assinado (.baguet.receipt.json)
+baguet compress entrada.bin saida.bgt --receipt
+
+# Verificar autenticidade e roundtrip de um recibo
+baguet verify-receipt saida.bgt.baguet.receipt.json --input-file entrada.bin --packet-file saida.bgt</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">Transcodificação multimídia reversível (<code>BGTU6</code>)</h3>
+        <p>
+          O transcodificador analisa a estrutura interna de contêineres e imagens pré-comprimidas (PNG RGB 8-bit sem entrelaçamento, áudio WAV PCM16, arrays NPY e arquivos <code>.gz</code> / <code>.zlib</code>) e reorganiza os fluxos em contêineres <code>.bgtu</code> com restauração bit-exact:
+        </p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">CLI // TRANSCODIFICAÇÃO BGTU6</span>
+              <span class="terminal-lang-badge">bash</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-bash">baguet transcode documento.png documento.bgtu
+baguet untranscode documento.bgtu restaurado.png --reconstruct-container</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">Prior de domínio, cofre de objetos e streaming</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">CLI // SLAB & STREAMING</span>
+              <span class="terminal-lang-badge">bash</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-bash"># Treinar prior contextual sobre arquivos de exemplo
+baguet train-prior dominio.bgtpr amostra1.txt amostra2.txt
+
+# Inserir e extrair de um cofre Slab (.bgtv) em O(1)
+baguet slab-put cofre.bgtv "documento/1" entrada.txt
+baguet slab-get cofre.bgtv "documento/1" restaurado.txt
+
+# Streaming paralelo de arquivos grandes (>10 GB) com workers multi-core
+baguet stream-compress arquivo-grande.bin arquivo-grande.bgts --chunk-size 4194304 --workers 4
+baguet stream-decompress arquivo-grande.bgts restaurado.bin --workers 4</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">Auditoria de ROI e ativação de licença</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">CLI // AUDITORIA & LICENÇAS</span>
+              <span class="terminal-lang-badge">bash</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-bash"># Auditoria deterministica de reducao e projecao de economia
+baguet roi-audit ./dataset --scale-tb 10.0 --json
+
+# Consultar status da licenca ativa
+baguet license status
+
+# Ativar licenca offline BGTL1 (persiste em ~/.baguet/license.key)
+baguet license activate "$BAGUET_LICENSE_TOKEN"</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">Criptografia autenticada (<code>BGT-AE</code> / <code>AES-256-SIV</code>)</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">CLI // CRIPTOGRAFIA AUTENTICADA BGT-AE</span>
+              <span class="terminal-lang-badge">bash</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-bash"># Comprimir protegendo com chave simetrica de 256 bits
+baguet compress dados.csv cofre.bgt --key "sua-chave-secreta-de-producao"
+
+# Descomprimir exigindo autenticacao
+baguet decompress cofre.bgt restaurado.csv --key "sua-chave-secreta-de-producao"
+
+# Ativar o modo de producao restrita (recusa formatos legados ou sem chave)
+baguet compress dados.csv cofre.bgt --key "sua-chave-secreta-de-producao" --production</code></pre>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           SEÇÃO 6: TUTORIAL COMPLETO DO BAGUET STUDIO
+           ====================================================================== -->
+      <section class="doc-section" id="studio">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[INTERFACE VISUAL LOCAL]</div>
+            <h2 class="section-heading">6. Tutorial completo do BAGUET Studio</h2>
+          </div>
+          <div class="section-acc-num">SEC.CAT-06</div>
+        </div>
+
+        <p>
+          O <strong>BAGUET Studio</strong> é a interface visual nativa do ecossistema, operando como um painel web local seguro em <strong>loopback</strong> (<code>127.0.0.1</code>). Ele elimina intermediários e permite controlar todas as capacidades do motor.
+        </p>
+
+        <!-- DIAGRAMA 3: PLANTA BAIXA DAS 5 SALAS DE EXPOSIÇÃO -->
+        <div class="diagram-instrument-frame reg-mark top-left bottom-right">
+          <div class="diagram-bezel">
+            <span class="diagram-title">PLANTA BAIXA DO LABORATÓRIO // 5 SALAS ARQUITETÔNICAS KUNSTHALLE</span>
+            <span class="mono">[EXHIBITION WINGS]</span>
+          </div>
+          <div class="ascii-schematic-box">
++---------------------+---------------------+---------------------+---------------------+---------------------+
+| HALL 01: ROI & AUDIT| HALL 02: COMPRESSOR | HALL 03: SLAB/STREAM| HALL 04: AI KERNELS | HALL 05: LICENSES   |
+| Projeção Financeira | Drag & Drop Plinth  | Cofre Slab O(1)     | Sub-linear RAG Top-K| Passaporte BGTL1    |
+| Réguas 1:1 Memória  | Cripto AES-256-SIV  | Streaming Paralelo  | Flash-SDPA Attention| Checkout Stripe     |
+| Certificados SHA256 | Transcoder BGTU6    | Inspetor O(1)       | Checkpoints BGTD6   | Recibos Ed25519     |
++---------------------+---------------------+---------------------+---------------------+---------------------+
+         |                     |                     |                     |                     |
+         v                     v                     v                     v                     v
+   [Atalho Teclado 1]    [Atalho Teclado 2]    [Atalho Teclado 3]    [Atalho Teclado 4]    [Atalho Teclado 5]</div>
+        </div>
+
+        <h3 class="subsection-heading">6.1 Como Iniciar o Studio</h3>
+        <p>No terminal, execute:</p>
+
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">CONSOLE // START STUDIO</span>
+              <span class="terminal-lang-badge">bash</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-bash">baguet studio</code></pre>
+        </div>
+
+        <p>
+          O comando inicia o serviço local na porta padrão <code>8765</code> e abre automaticamente seu navegador em:
+          <br>
+          <strong class="mono" style="font-size: 13px; color: var(--accent-swiss);">http://127.0.0.1:8765/</strong>
+        </p>
+
+        <p><strong>Opções de Inicialização:</strong></p>
+        <ul>
+          <li><code>baguet studio --host 127.0.0.1</code>: especifica o endereço IP local de escuta (padrão seguro <code>127.0.0.1</code>).</li>
+          <li><code>baguet studio --port 8765</code>: define uma porta TCP personalizada caso a 8765 esteja ocupada por outro serviço.</li>
+          <li><code>baguet studio --no-browser</code>: executa o serviço sem disparar a janela do navegador automaticamente (ideal para servidores remotos, containers Docker ou acesso via túnel SSH).</li>
+          <li><code>baguet studio --once</code>: atende a uma única sessão de uso e encerra o processo do servidor local automaticamente.</li>
+        </ul>
+
+        <div class="lab-plate lab-plate-warning">
+          <div class="lab-plate-header">
+            <span class="lab-plate-tag red">AVISO OPERACIONAL</span>
+            <span>MODO DE DEMONSTRAÇÃO VS AMBIENTE DE PRODUÇÃO</span>
+          </div>
+          <div class="lab-plate-content">
+            <strong>Modo de Demonstração:</strong> abrir <code>studio/index.html</code> diretamente pelo protocolo <code>file://</code> sem iniciar o comando <code>baguet studio</code> impede o acesso seguro às APIs locais do sistema operacional. Nessa condição, a interface opera em modo estático de demonstração. Para processar seus arquivos de produção, inicie sempre através do comando <code>baguet studio</code>.
+          </div>
+        </div>
+
+        <h3 class="subsection-heading">6.2 Navegação Global, Idiomas e Atalhos de Teclado</h3>
+        <ul>
+          <li><strong>Atalhos Rápidos de Teclado:</strong> Pressione as teclas numéricas <code>1</code>, <code>2</code>, <code>3</code>, <code>4</code> ou <code>5</code> para saltar instantaneamente entre os Halls.</li>
+          <li><strong>Paleta de Comandos (<code>[ ⌘K ]</code> ou <code>Ctrl+K</code>):</strong> Abre a busca rápida para acionar auditorias, disparar o auto-teste (<code>self-test</code>) ou inspecionar recibos recentes apenas digitando.</li>
+          <li><strong>Seletor de Idioma (i18n):</strong> No canto superior direito, alterne em menos de 1 ms entre <strong>7 idiomas completos</strong>: <code>EN</code> (Inglês), <code>PT</code> (Português), <code>ES</code> (Espanhol), <code>DE</code> (Alemão), <code>FR</code> (Francês), <code>ZH</code> (Chinês) e <code>JA</code> (Japonês). A preferência é salva localmente em <code>~/.baguet/preferences.json</code>.</li>
+          <li><strong>Rodapé de Instrumentação:</strong> Exibe o status do acelerador vetorial (<code>AVX2/FMA</code> ou <code>NEON</code>), latência FFI da última operação em microssegundos e garantia de proteção contra CSRF.</li>
+        </ul>
+
+        <!-- DETALHAMENTO DAS 5 SALAS -->
+        <div class="hall-spec-card">
+          <div class="hall-spec-header">
+            <div>
+              <span class="hall-num">SALA 01</span>
+              <span class="hall-name"> — ROI & Audit (01 / ROI & AUDIT)</span>
+            </div>
+            <span class="mono text-muted">[AUDITORIA FINANCEIRA]</span>
+          </div>
+          <p><strong>Objetivo:</strong> Auditar pastas ou conjuntos de dados e calcular a economia de custos em nuvem e memória RAM/VRAM.</p>
+          <div class="hall-steps">
+            <div class="hall-step-item">
+              <span class="hall-step-num">1</span>
+              <div>Digite o caminho de uma pasta local (ex.: <code>~/datasets/logs</code> ou <code>/var/dados</code>).</div>
+            </div>
+            <div class="hall-step-item">
+              <span class="hall-step-num">2</span>
+              <div>Ajuste a <strong>Projeção de Escala</strong> nos seletores rápidos: <code>1 TB</code>, <code>10 TB</code> (padrão), <code>100 TB</code> ou <code>1 PB</code>.</div>
+            </div>
+            <div class="hall-step-item">
+              <span class="hall-step-num">3</span>
+              <div>
+                Ajuste os custos unitários da sua infraestrutura:
+                <ul>
+                  <li><strong>Armazenamento em Nuvem ($/TB/Mês):</strong> padrão <code>0.023</code> (baseado em S3/Cloud Storage).</li>
+                  <li><strong>Memória RAM/VRAM ($/GB/Mês):</strong> padrão <code>3.40</code> (baseado em instâncias de GPU cloud).</li>
+                </ul>
+              </div>
+            </div>
+            <div class="hall-step-item">
+              <span class="hall-step-num">4</span>
+              <div>Clique em <strong>RE-RUN FORENSIC AUDIT</strong>.</div>
+            </div>
+            <div class="hall-step-item">
+              <span class="hall-step-num">5</span>
+              <div>O painel apresenta a taxa de redução física, a régua comparativa 1:1, a projeção financeira anual de economia e a tabela de inventário item a item certificada com <code>100% BIT-EXACT SHA-256</code>.</div>
+            </div>
+            <div class="hall-step-item">
+              <span class="hall-step-num">6</span>
+              <div>Clique em <strong>ISSUE CRYPTOGRAPHIC AUDIT CERTIFICATE</strong> para exportar o laudo pericial assinado.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hall-spec-card">
+          <div class="hall-spec-header">
+            <div>
+              <span class="hall-num">SALA 02</span>
+              <span class="hall-name"> — Compressor & Transcoder (02 / COMPRESSOR)</span>
+            </div>
+            <span class="mono text-muted">[MOTOR LOSSLESS]</span>
+          </div>
+          <p><strong>Objetivo:</strong> Compactar, descompactar e transcodificar arquivos com precisão matemática integral.</p>
+          <div class="hall-steps">
+            <div class="hall-step-item">
+              <span class="hall-step-num">1</span>
+              <div><strong>Carregar o Arquivo:</strong> Arraste e solte o arquivo desejado sobre o plinto central de Drag & Drop ou clique para selecionar.</div>
+            </div>
+            <div class="hall-step-item">
+              <span class="hall-step-num">2</span>
+              <div>
+                <strong>Escolha a Operação:</strong>
+                <ul>
+                  <li><strong>Compress File:</strong> compacta qualquer arquivo regular gerando o contêiner <code>.bgt</code>.</li>
+                  <li><strong>Restore Original:</strong> descomprime um arquivo <code>.bgt</code> validando a integridade por SHA-256.</li>
+                  <li><strong>Convert File:</strong> transcodifica formatos pré-comprimidos (PNG, WAV, NPY, gzip) para <code>.bgtu</code>.</li>
+                  <li><strong>Restore Original Format:</strong> reverte o contêiner <code>.bgtu</code> ao arquivo original de forma bit-exact.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="hall-step-item">
+              <span class="hall-step-num">3</span>
+              <div>
+                <strong>Interruptores de Precisão:</strong>
+                <ul>
+                  <li><strong>Authenticated Encryption (AES-256-SIV):</strong> adiciona proteção criptográfica militar (requer Tier Growth ou chave informada).</li>
+                  <li><strong>Issue Bit-Exact Delivery Certificate:</strong> gera um certificado assinado Ed25519 com os hashes de entrada e saída.</li>
+                  <li><strong>Export Standalone Web Archive (.bgt.html):</strong> encapsula o pacote em uma página web auto-extraível.</li>
+                  <li><strong>Real-Time Fast Mode (~1.8 GiB/s):</strong> prioriza velocidade para pipelines de alta vazão.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="hall-step-item">
+              <span class="hall-step-num">4</span>
+              <div>Clique em <strong>EXECUTE COMPRESSION ENGINE</strong>.</div>
+            </div>
+            <div class="hall-step-item">
+              <span class="hall-step-num">5</span>
+              <div>Ao concluir, utilize os botões <strong>DOWNLOAD RESULT</strong> e <strong>VIEW RECEIPT</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hall-spec-card">
+          <div class="hall-spec-header">
+            <div>
+              <span class="hall-num">SALA 03</span>
+              <span class="hall-name"> — Slab & Stream (03 / SLAB & STREAM)</span>
+            </div>
+            <span class="mono text-muted">[CONTÊINERES & VAZÃO]</span>
+          </div>
+          <p><strong>Objetivo:</strong> Inspecionar formatos em tempo <em>O(1)</em>, gerenciar bancos em arquivo único e executar streaming multi-thread.</p>
+          <ul>
+            <li><strong>Inspetor Universal de Formatos:</strong> Selecione qualquer arquivo <code>.bgt*</code> e clique em <strong>INSPECT FILE</strong> para visualizar metadados estruturais, versão e assinatura do cabeçalho sem descompactar o arquivo.</li>
+            <li><strong>Instalação no Sistema Operacional:</strong> Clique em <strong>INSTALL TO CONTEXT MENU & DESKTOP SHORTCUT</strong> para provisionar as extensões de clique direito no macOS, Windows ou Linux.</li>
+            <li>
+              <strong>Indexed Object Vault (Slab Pool <code>.bgtv</code>):</strong>
+              <ol>
+                <li>Informe o caminho do cofre (ex.: <code>meu_banco.bgtv</code>).</li>
+                <li>Clique em <strong>LIST</strong> para ver as chaves cadastradas.</li>
+                <li>Arraste um arquivo no Compressor e use <strong>+ INSERIR OBJETO (PUT)</strong> informando a chave lógica (ex.: <code>layer0.weights</code>).</li>
+                <li>Recupere qualquer objeto em tempo <em>O(1)</em> pelo botão <strong>GET O(1)</strong> ou remova com <strong>DEL</strong>.</li>
+              </ol>
+            </li>
+            <li>
+              <strong>Motor de Streaming Paralelo:</strong>
+              <ol>
+                <li>Especifique arquivo de entrada e destino <code>.bgts</code>.</li>
+                <li>Ajuste o tamanho do bloco (<code>64 KB</code> a <code>4 MB</code>) e a quantidade de workers (<code>1</code> a <code>64</code>).</li>
+                <li>Execute <strong>RUN STREAM COMPRESSION</strong> ou <strong>DECOMPRESS STREAM</strong>.</li>
+              </ol>
+            </li>
+          </ul>
+        </div>
+
+        <div class="hall-spec-card">
+          <div class="hall-spec-header">
+            <div>
+              <span class="hall-num">SALA 04</span>
+              <span class="hall-name"> — AI & LLM Studio (04 / AI KERNELS)</span>
+            </div>
+            <span class="mono text-muted">[COMPUTE-ON-COMPRESSED-DATA]</span>
+          </div>
+          <p><strong>Objetivo:</strong> Simular e inspecionar a execução direta sobre dados comprimidos (<em>Compute-on-Compressed-Data</em>).</p>
+          <div class="hall-steps">
+            <div class="hall-step-item">
+              <span class="hall-step-num">1</span>
+              <div>
+                <strong>Selecione o Perfil Matemático:</strong>
+                <ul>
+                  <li><code>RAG Sub-Linear Top-K (Cauchy-Schwarz Sketch Pruning)</code>: busca com poda de mais de 70% dos blocos e 100% de Recall.</li>
+                  <li><code>Online Flash-SDPA Attention (Modo 9)</code>: cálculo de atenção diretamente sobre fatias de KV-Cache comprimidas.</li>
+                  <li><code>Zero-Copy KV-Cache Offloader</code>: swap estruturado com paged attention sob demanda.</li>
+                  <li><code>Direct Compressed Linear Projection</code>: produto matricial <em>W · x + b</em> sem inflar tensores inteiros na memória.</li>
+                  <li><code>Progressive Tensor & AllReduce (BGTP6)</code>: separação em camada base e refinamento residual.</li>
+                  <li><code>Differential Fine-Tuning Checkpoint (BGTD6)</code>: deltas matriciais exatos para LoRA e checkpoints.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="hall-step-item">
+              <span class="hall-step-num">2</span>
+              <div>Defina o tamanho do tensor de teste (na licença gratuita Community, o limite do sandbox é de 16 MB).</div>
+            </div>
+            <div class="hall-step-item">
+              <span class="hall-step-num">3</span>
+              <div>Clique em <strong>RUN LIVE AI BENCHMARK</strong>.</div>
+            </div>
+            <div class="hall-step-item">
+              <span class="hall-step-num">4</span>
+              <div>O Studio renderiza o diagrama vetorial cinético ilustrando a decomposição ortogonal de planos de bits (Sign, Exponent e Mantissa) e disponibiliza o trecho de código Python pronto para cópia (<code>[ ⌘C ]</code>).</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hall-spec-card">
+          <div class="hall-spec-header">
+            <div>
+              <span class="hall-num">SALA 05</span>
+              <span class="hall-name"> — Licenses & Chancellery (05 / LICENSES)</span>
+            </div>
+            <span class="mono text-muted">[GOVERNANÇA OFFLINE]</span>
+          </div>
+          <p><strong>Objetivo:</strong> Gerenciar o passaporte criptográfico offline, conferir recibos periciais e gerenciar planos.</p>
+          <div class="hall-steps">
+            <div class="hall-step-item">
+              <span class="hall-step-num">1</span>
+              <div><strong>Passaporte Criptográfico:</strong> Inspecione o tier ativo, organização, limites de payload e dias de carência (<em>grace period</em>).</div>
+            </div>
+            <div class="hall-step-item">
+              <span class="hall-step-num">2</span>
+              <div>
+                <strong>Ativação de Licença Offline:</strong>
+                <ul>
+                  <li>Cole o token no formato <code>BGTL1.&lt;payload&gt;.&lt;assinatura&gt;</code> e clique em <strong>ACTIVATE CREDENTIAL</strong>. A validação é realizada inteiramente na CPU local via Ed25519 sem conexões com a internet.</li>
+                  <li>Para fins de testes de integração, selecione um plano de teste e clique em <strong>ISSUE DEMO TOKEN</strong> para avaliar as cotas superiores instantaneamente.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="hall-step-item">
+              <span class="hall-step-num">3</span>
+              <div>
+                <strong>Upgrade de Assinatura via Stripe:</strong>
+                <ul>
+                  <li>Alterne entre faturamento <strong>MENSAL</strong> ou <strong>ANUAL</strong> (-16% de desconto).</li>
+                  <li>Para os planos <strong>Pro</strong> e <strong>Growth</strong>, clique em <strong>UPGRADE</strong> para abrir o checkout seguro do Stripe e receber o passaporte <code>BGTL1</code> imediatamente. Para o plano <strong>Enterprise</strong>, clique em <strong>CONTACT FOR CONTRACT</strong> para iniciar a contratação B2B sob medida via <a href="mailto:contact@soilore.com?subject=Baguet%20Enterprise%20Contract">contact@soilore.com</a>.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="hall-step-item">
+              <span class="hall-step-num">4</span>
+              <div><strong>Verificadores Forenses:</strong> Utilize os verificadores integrados para auditar certificados de integridade <code>.baguet.receipt.json</code> ou validar pacotes de atualização assinados offline <code>.bgtupd</code>.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           SEÇÃO 7: BENCHMARKS E COMPARAÇÃO COM A INDÚSTRIA
+           ====================================================================== -->
+      <section class="doc-section" id="benchmarks">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[MÉTRICAS DETERMINÍSTICAS]</div>
+            <h2 class="section-heading">7. Benchmarks e comparação com a indústria</h2>
+          </div>
+          <div class="section-acc-num">SEC.CAT-07</div>
+        </div>
+
+        <p>
+          Os resultados a seguir foram homologados a partir dos relatórios técnicos de auditoria do BAGUET. Todas as medições refletem execuções determinísticas com validação criptográfica de integridade SHA-256 e tolerância estrita de ponto flutuante <code>np.allclose(atol=1e-5, rtol=1e-5)</code> para operações matriciais.
+        </p>
+
+        <!-- RÉGUA COMPARATIVA DE ECONOMIA DE MEMÓRIA (DIETER RAMS) -->
+        <div class="diagram-instrument-frame">
+          <div class="diagram-bezel">
+            <span class="diagram-title">RÉGUA DE ECONOMIA DE MEMÓRIA 1:1 // CASOS CRÍTICOS DE PRODUÇÃO</span>
+            <span class="mono">[PHYSICAL SCALE PROJECTION]</span>
+          </div>
+          <div class="comparative-ruler-grid">
+            <div class="ruler-row">
+              <div class="ruler-label-bar">
+                <span>KV CACHE FP16 DE GRANDE PORTE (67.117.056 B RAW)</span>
+                <span class="mono swiss-red">99.90% DE REDUÇÃO (1.008× MENOR)</span>
+              </div>
+              <div class="ruler-track">
+                <div class="ruler-fill hatch" style="width: 100%;">SAFETENSORS RAW: 67.1 MB</div>
+                <div class="ruler-ticks"></div>
+              </div>
+              <div class="ruler-track" style="margin-top: 4px;">
+                <div class="ruler-fill swiss" style="width: 1.2%; min-width: 4px;"></div>
+                <span class="ruler-val">BAGUET: 66.5 KB</span>
+                <div class="ruler-ticks"></div>
+              </div>
+            </div>
+
+            <div class="ruler-row">
+              <div class="ruler-label-bar">
+                <span>EMBEDDINGS PARA RAG TOP-K (262.144 B RAW)</span>
+                <span class="mono swiss-red">4,00× MENOR // 100% RECALL@K</span>
+              </div>
+              <div class="ruler-track">
+                <div class="ruler-fill" style="width: 91%;">ZSTD LEVEL-3: 239.8 KB</div>
+                <div class="ruler-ticks"></div>
+              </div>
+              <div class="ruler-track" style="margin-top: 4px;">
+                <div class="ruler-fill swiss" style="width: 25%; min-width: fit-content;">BAGUET: 65.5 KB</div>
+                <div class="ruler-ticks"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="subsection-heading">7.1 Dados de IA e Compute-on-Compressed-Data</h3>
+        <div class="table-responsive-frame">
+          <table class="swiss-table">
+            <thead>
+              <tr>
+                <th>Carga de Trabalho</th>
+                <th class="td-center">Entrada Bruta</th>
+                <th class="td-center">Saída BAGUET</th>
+                <th>Alternativa / Padrão</th>
+                <th>Desempenho e Métricas Observadas</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Embeddings para RAG Top-K</strong></td>
+                <td class="mono td-center">262.144 B</td>
+                <td class="mono td-center td-highlight">65.536 B</td>
+                <td>Zstandard (level 3): 239.862 B</td>
+                <td><strong>4,00× menor</strong> que o original; busca Top-K concluída em <strong>2,04 ms</strong> p50 com <strong>100% de Recall@K</strong></td>
+              </tr>
+              <tr>
+                <td><strong>KV Cache de LLMs (Atenção)</strong></td>
+                <td class="mono td-center">262.144 B</td>
+                <td class="mono td-center td-highlight">96.732 B</td>
+                <td>Zstandard (level 3): 233.570 B</td>
+                <td><strong>2,71× menor</strong> que o original; atenção direta executada em <strong>0,125 ms a 1,18 ms</strong></td>
+              </tr>
+              <tr>
+                <td><strong>KV Cache FP16 de Grande Porte</strong></td>
+                <td class="mono td-center">67.117.056 B</td>
+                <td class="mono td-center td-highlight">66.545 B</td>
+                <td>SafeTensors (raw): 67.117.184 B</td>
+                <td><strong>99,90% de redução</strong> frente à entrada; cerca de 1.008× mais compacto que a serialização raw</td>
+              </tr>
+              <tr>
+                <td><strong>Pesos de Redes Neurais (BF16)</strong></td>
+                <td class="mono td-center">2.097.152 B</td>
+                <td class="mono td-center td-highlight">1.446.672 B</td>
+                <td>ByteShuffle + Zstd-3: 1.776.960 B</td>
+                <td><strong>31,0% menor</strong> que o original (<strong>1,45× de redução</strong> em pesos densos BF16)</td>
+              </tr>
+              <tr>
+                <td><strong>Checkpoint Delta LoRA (BGTD6)</strong></td>
+                <td class="mono td-center">524.342 B</td>
+                <td class="mono td-center td-highlight">2.679 B</td>
+                <td>Pesos Standalone: 419.634 B</td>
+                <td>O delta é <strong>99,36% menor</strong> que os pesos standalone (<strong>153× menor</strong>); leitura em ~1,2 ms</td>
+              </tr>
+              <tr>
+                <td><strong>Tensor Progressivo FP32 (BGTP6)</strong></td>
+                <td class="mono td-center">40.960 B</td>
+                <td class="mono td-center td-highlight">Base: 14.361 B</td>
+                <td>Tensor Bruto FP32: 40.960 B</td>
+                <td>A camada base economiza <strong>64,94% de memória</strong> na inicialização rápida; refinamento 100% exato sob demanda</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="subsection-heading">7.2 Multimídia e Codecs Especializados</h3>
+        <div class="table-responsive-frame">
+          <table class="swiss-table">
+            <thead>
+              <tr>
+                <th>Modalidade</th>
+                <th class="td-center">Entrada Bruta</th>
+                <th class="td-center">Saída BAGUET</th>
+                <th>Codec Padrão Especializado</th>
+                <th>Comparativo vs Padrão da Indústria</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Áudio PCM16 Mono</strong></td>
+                <td class="mono td-center">96.000 B</td>
+                <td class="mono td-center td-highlight">3.163 B</td>
+                <td>FLAC (FFmpeg): 46.066 B</td>
+                <td><strong>93,1% mais compacto que FLAC</strong>; restauração em 0,72 ms</td>
+              </tr>
+              <tr>
+                <td><strong>Vídeo Volumétrico / CT Gray8</strong></td>
+                <td class="mono td-center">65.536 B</td>
+                <td class="mono td-center td-highlight">103 B</td>
+                <td>FFV1 Matroska: 2.662 B</td>
+                <td><strong>96,1% mais compacto que FFV1</strong>; restauração em 0,21 ms</td>
+              </tr>
+              <tr>
+                <td><strong>Imagem RGB 24-bit</strong></td>
+                <td class="mono td-center">36.864 B</td>
+                <td class="mono td-center td-highlight">2.832 B</td>
+                <td>PNG (Pillow): 4.962 B</td>
+                <td><strong>42,9% mais compacto que PNG</strong>; restauração em 0,07 ms</td>
+              </tr>
+              <tr>
+                <td><strong>Transcodificação de Gzip</strong></td>
+                <td class="mono td-center">31.548 B</td>
+                <td class="mono td-center td-highlight">3.734 B</td>
+                <td>Gzip original: 31.548 B</td>
+                <td><strong>88,16% menor que o arquivo gzip</strong>; restauração em 0,89 ms</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="subsection-heading">7.3 Fluxos e Dados Estruturados</h3>
+        <div class="table-responsive-frame">
+          <table class="swiss-table">
+            <thead>
+              <tr>
+                <th>Cenário</th>
+                <th class="td-center">Entrada Bruta</th>
+                <th class="td-center">Saída BAGUET</th>
+                <th>Alternativas de Mercado</th>
+                <th>Desempenho e Latência</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Conjunto Core 53 Agregado</strong></td>
+                <td class="mono td-center">1.922.921 B</td>
+                <td class="mono td-center td-highlight">60.980 B</td>
+                <td>Zstd: 227.515 B; Brotli: 209.327 B</td>
+                <td><strong>Redução de 96,83%</strong> frente à entrada; <strong>31,5× mais compacto</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Fluxo Repetitivo de Telemetria</strong></td>
+                <td class="mono td-center">1.200.000 B</td>
+                <td class="mono td-center td-highlight">2.396 B</td>
+                <td>LZ4 (fast block): 4.750 B</td>
+                <td><strong>49,6% menor que LZ4</strong>; restauração em 0,77 ms</td>
+              </tr>
+              <tr>
+                <td><strong>Logs Estruturados JSONL</strong></td>
+                <td class="mono td-center">4.640 B</td>
+                <td class="mono td-center td-highlight">237 B</td>
+                <td>Zstandard (level 3): 1.120 B</td>
+                <td><strong>94,89% de redução (19,58×)</strong>; operação em 0,64 ms p50</td>
+              </tr>
+              <tr>
+                <td><strong>Cofre de Objetos (Slab Pool)</strong></td>
+                <td class="mono td-center">9.480 B</td>
+                <td class="mono td-center td-highlight">1.518 B</td>
+                <td>TAR + Gzip: 3.890 B</td>
+                <td><strong>61,0% menor que TAR + Gzip</strong>; acesso indexado em ~0,18 ms</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="subsection-heading">7.4 Latência do Gate Estrito e Confiabilidade Industrial</h3>
+        <ul class="catalog-list">
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[GATE]</span>
+            <div><strong>Gate Estrito Core 53:</strong> Todas as 5 rodadas de 53 cenários no macOS Apple Silicon nativo fecharam com média de <strong>56,01 ms</strong> (desvio-padrão de 0,25 ms).</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[ASAN]</span>
+            <div><strong>Sanitizers C-ABI & Ausência de Vazamentos:</strong> Mais de 16.600 chamadas FFI instrumentadas com ASan/UBSan e TSan sem nenhum registro de vazamento de memória ou corrida de dados (<em>data race</em>).</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[FUZZ]</span>
+            <div><strong>Fuzzing Intensivo LLVM:</strong> Mais de 561 milhões de execuções automatizadas sem falhas, panics ou overflows de memória.</div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ======================================================================
+           SEÇÃO 8: LICENCIAMENTO, MATRIZ COMERCIAL E GOVERNANÇA OFFLINE (BGTL1)
+           ====================================================================== -->
+      <section class="doc-section" id="licenciamento">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[ARQUITETURA DE LICENÇAS]</div>
+            <h2 class="section-heading">8. Licenciamento, Matriz Comercial e Governança Offline (BGTL1)</h2>
+          </div>
+          <div class="section-acc-num">SEC.CAT-08</div>
+        </div>
+
+        <p>O BAGUET adota um modelo de licenciamento dual transparente regido por <strong><code>BUSL-1.1 AND MIT</code></strong>:</p>
+
+        <div class="lab-plate lab-plate-crypto">
+          <div class="lab-plate-header">
+            <span class="lab-plate-tag blue">DECLARAÇÃO FORMAL</span>
+            <span>DIREITO INCONDICIONAL DE ZERO VENDOR LOCK-IN</span>
+          </div>
+          <div class="lab-plate-content mono" style="font-size: 12.5px;">
+Todas as rotinas de leitura, descompressão universal (.bgt), reversão de contêineres (.bgtu),
+extração por mmap (.bgtt) e verificação de integridade SHA-256 são regidas pela licença permissiva MIT:
+100% LIVRES, PERPÉTUAS E GRATUITAS PARA SEMPRE.
+          </div>
+        </div>
+
+        <p>
+          A tecnologia de compressão avançada, aceleração SIMD multi-thread e os kernels de computação direta sobre tensores para produção são governados por tokens criptográficos offline <strong><code>BGTL1</code></strong>, assinados assimetricamente via <strong><code>Ed25519</code> (RFC 8032)</strong>.
+        </p>
+
+        <h3 class="subsection-heading">8.1 Matriz de Planos e Tiers Comerciais</h3>
+        <div class="table-responsive-frame">
+          <table class="swiss-table">
+            <thead>
+              <tr>
+                <th>Recurso Técnico / Limite</th>
+                <th class="td-center">00. Community (Open Reader)</th>
+                <th class="td-center">01. Pro (AI Builder)</th>
+                <th class="td-center td-highlight">02. Growth (AI Scale — Mais Popular)</th>
+                <th class="td-center">03. Enterprise (Air-Gapped)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Modalidade de Contratação</strong></td>
+                <td class="td-center"><strong>Acesso Livre & Perpétuo</strong></td>
+                <td class="td-center"><strong>Assinatura Comercial</strong></td>
+                <td class="td-center td-highlight"><strong>Assinatura Comercial</strong></td>
+                <td class="td-center"><strong>Contrato B2B Customizado (<a href="mailto:contact@soilore.com?subject=Baguet%20Enterprise%20Contract">contact@soilore.com</a>)</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Descompressão & Reversão Universal</strong></td>
+                <td class="td-center"><strong>Ilimitada (Livre sob MIT)</strong></td>
+                <td class="td-center"><strong>Ilimitada</strong></td>
+                <td class="td-center td-highlight"><strong>Ilimitada</strong></td>
+                <td class="td-center"><strong>Ilimitada</strong></td>
+              </tr>
+              <tr>
+                <td><strong>BAGUET Studio, CLI & Recibos Ed25519</strong></td>
+                <td class="td-center">Incluso</td>
+                <td class="td-center">Incluso</td>
+                <td class="td-center td-highlight">Incluso</td>
+                <td class="td-center">Incluso</td>
+              </tr>
+              <tr>
+                <td><strong>Limite por Operação (<code>max_bytes</code>)</strong></td>
+                <td class="mono td-center">Até 64 MB</td>
+                <td class="mono td-center">Até 8 GB</td>
+                <td class="mono td-center td-highlight">Até 64 GB</td>
+                <td class="mono td-center"><strong>Ilimitado (Multi-Terabyte)</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Escala de Implantação (Nós/Contêineres)</strong></td>
+                <td class="td-center">Uso Local / Avaliação</td>
+                <td class="td-center">Até 8 nós</td>
+                <td class="td-center td-highlight">Até 64 nós</td>
+                <td class="td-center"><strong>Datacenter / Cluster Ilimitado</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Concorrência Nativa (Workers)</strong></td>
+                <td class="mono td-center">1 Worker</td>
+                <td class="mono td-center">16 Workers</td>
+                <td class="mono td-center td-highlight">64 Workers</td>
+                <td class="mono td-center">64 Workers / nó</td>
+              </tr>
+              <tr>
+                <td><strong>Período de Carência (<em>Grace Period</em>)</strong></td>
+                <td class="mono td-center">0 dias</td>
+                <td class="mono td-center">7 dias</td>
+                <td class="mono td-center td-highlight">15 dias</td>
+                <td class="mono td-center"><strong>90 dias</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Kernels de IA (RAG, Flash-SDPA, W·x)</strong></td>
+                <td class="td-center">Sandbox até 16 MB</td>
+                <td class="td-center"><code>RAG Top-K</code> & <code>Fast-Mode</code></td>
+                <td class="td-center td-highlight"><strong>Suite IA Completa Multi-Core</strong></td>
+                <td class="td-center"><strong>Suite IA Completa + Clustered</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Transcodificação BGTU6 & SafeTensors</strong></td>
+                <td class="mono td-center">Até 64 MB</td>
+                <td class="mono td-center">Até 8 GB</td>
+                <td class="mono td-center td-highlight">Até 64 GB</td>
+                <td class="mono td-center"><strong>Ilimitado (Modelos 70B/405B+)</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Criptografia BGT-AE (AES-256-SIV)</strong></td>
+                <td class="td-center">—</td>
+                <td class="td-center">—</td>
+                <td class="td-center td-highlight"><strong>Incluso (<code>--production</code>)</strong></td>
+                <td class="td-center"><strong>Incluso + Módulos HSM / KMS</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Atualizações Offline Assinadas (.bgtupd)</strong></td>
+                <td class="td-center">—</td>
+                <td class="td-center">—</td>
+                <td class="td-center td-highlight">—</td>
+                <td class="td-center"><strong>Incluso (Chaves dedicadas)</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="lab-plate lab-plate-note">
+          <div class="lab-plate-header">
+            <span class="lab-plate-tag">CONDIÇÕES COMERCIAIS</span>
+            <span>PORTAL OFICIAL & CONTRATAÇÃO SELF-SERVICE</span>
+          </div>
+          <div class="lab-plate-content">
+            <strong>Tabela de Preços e Condições Comerciais Atualizadas:</strong><br>
+            Por se tratar de um guia técnico de engenharia e referência de arquitetura, os valores vigentes das assinaturas self-service (Pro e Growth) e as propostas sob medida do plano Enterprise (B2B sob contrato) não são fixados nesta documentação técnica. Para consultar a precificação vigente e realizar a contratação self-service dos planos Pro e Growth, acesse o portal comercial oficial em <a href="https://baguet.soilore.com" target="_blank" rel="noopener">baguet.soilore.com</a> ou utilize o painel interativo do <strong>BAGUET Studio</strong> (<code>baguet studio</code> -&gt; Sala 05 <em>Licenses</em>). Para contratação do plano Enterprise, entre em contato diretamente pelo e-mail <a href="mailto:contact@soilore.com?subject=Baguet%20Enterprise%20Contract">contact@soilore.com</a>.
+          </div>
+        </div>
+
+        <h3 class="subsection-heading">8.2 Como Ativar um Token <code>BGTL1</code> Offline</h3>
+        <p>A validação de licenças opera 100% offline via chaves públicas Ed25519 embutidas na biblioteca.</p>
+
+        <p><strong>Via Variável de Ambiente (Docker / Kubernetes):</strong></p>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">SHELL // VARIÁVEL DE AMBIENTE</span>
+              <span class="terminal-lang-badge">bash</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-bash">export BAGUET_LICENSE_TOKEN="BGTL1.eyJleHAiOjE4MD...<payload>.signature"</code></pre>
+        </div>
+
+        <p><strong>Via Linha de Comando (Persistência Local):</strong></p>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">CLI // PERSISTÊNCIA EM DISCO</span>
+              <span class="terminal-lang-badge">bash</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-bash">baguet license activate "BGTL1.eyJleHAiOjE4MD...<payload>.signature"</code></pre>
+        </div>
+
+        <p><strong>Via SDK Python:</strong></p>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // INSTANCIAÇÃO DIRETA</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">from baguet_sdk import core
+
+engine = core.BaguetEngine(license_token="BGTL1.eyJleHAiOjE4MD...<payload>.signature")</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">8.3 Variáveis de Ambiente e Blindagem Operacional</h3>
+        <p>O ecossistema BAGUET suporta um conjunto auditado de variáveis de ambiente para orquestração em contêineres, clusters de alta criticidade e mitigação de vulnerabilidades em dependências nativas de terceiros:</p>
+
+        <div class="table-responsive-frame">
+          <table class="swiss-table">
+            <thead>
+              <tr>
+                <th>Variável de Ambiente</th>
+                <th>Valores / Tipo</th>
+                <th>Finalidade e Comportamento Operacional</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono td-highlight">BAGUET_LICENSE_TOKEN</td>
+                <td class="mono">String (BGTL1)</td>
+                <td>Token criptográfico Ed25519 para ativação offline de licenças Pro, Growth ou Enterprise em ambientes sem disco persistente (Docker / Kubernetes / CI).</td>
+              </tr>
+              <tr>
+                <td class="mono td-highlight">BAGUET_REQUIRE_PATCHED_BROTLI</td>
+                <td class="mono">"1" / "0"</td>
+                <td>Mitigação defensiva contra a vulnerabilidade <strong>CVE-2026-111497 (Brotli HTTP2Shell / Broccoli2Shell)</strong>. Quando definida como <code class="mono">"1"</code>, o motor exige biblioteca C <code class="mono">brotli &gt;= 1.2.1</code> para desembrulhar fluxos pré-compactados em <code class="mono">_unwrap_precompressed_stream</code>; versões anteriores são tratadas com segurança como <code class="mono">raw</code> sem alimentar o descompressor C vulnerável.</td>
+              </tr>
+              <tr>
+                <td class="mono">BAGUET_DISABLE_BROTLI_PROBE</td>
+                <td class="mono">"1" / "0"</td>
+                <td>Desativa completamente qualquer tentativa de probe ou descompressão de fluxos Brotli, retornando imediatamente os dados brutos como <code class="mono">raw</code>.</td>
+              </tr>
+              <tr>
+                <td class="mono">BAGUET_HOME</td>
+                <td class="mono">Caminho (Diretório)</td>
+                <td>Define o diretório base para armazenamento de licenças locais, leases de nó e preferências (padrão: <code class="mono">~/.baguet</code>).</td>
+              </tr>
+              <tr>
+                <td class="mono">BAGUET_LANG</td>
+                <td class="mono">"en" | "pt" | ...</td>
+                <td>Sobrescreve a detecção automática de idioma do sistema operacional para a CLI e o Studio (suporte a 7 idiomas).</td>
+              </tr>
+              <tr>
+                <td class="mono">BAGUET_NODE_ID</td>
+                <td class="mono">String</td>
+                <td>Identificador de nó explícito para contabilização e liberação em gerenciamento de leases concorrentes flutuantes (Floating Node Leases).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           SEÇÃO 9: ATUALIZAÇÃO E MANUTENÇÃO
+           ====================================================================== -->
+      <section class="doc-section" id="atualizacao">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[CICLO DE VIDA DO SOFTWARE]</div>
+            <h2 class="section-heading">9. Atualização e manutenção</h2>
+          </div>
+          <div class="section-acc-num">SEC.CAT-09</div>
+        </div>
+
+        <ol class="catalog-list">
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[01]</span>
+            <div>Obtenha a nova distribuição pelo canal oficial aprovado por sua organização (Pip ou Conda).</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[02]</span>
+            <div>Valide o manifesto de distribuição e as assinaturas digitais do pacote.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[03]</span>
+            <div>Realize backup preventivo das configurações locais e licenças presentes em <code>~/.baguet/</code>.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[04]</span>
+            <div>
+              Atualize o pacote dentro do mesmo ambiente virtual:
+              <div class="terminal-chassis" style="margin: 12px 0 6px;">
+                <pre class="code-block"><code class="language-bash">pip install --upgrade baguet
+# ou via Conda:
+conda update baguet</code></pre>
+              </div>
+            </div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[05]</span>
+            <div>
+              Execute a bateria de auto-teste determinística:
+              <div class="terminal-chassis" style="margin: 12px 0 6px;">
+                <pre class="code-block"><code class="language-bash">baguet self-test</code></pre>
+              </div>
+            </div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[06]</span>
+            <div>Inicie o Studio e realize um ciclo de teste de compressão e restauração em um arquivo de amostra.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[07]</span>
+            <div>Migre os serviços de produção para a nova versão.</div>
+          </li>
+        </ol>
+      </section>
+
+      <!-- ======================================================================
+           SEÇÃO 10: RESOLUÇÃO DE PROBLEMAS (TROUBLESHOOTING) & FAQ
+           ====================================================================== -->
+      <section class="doc-section" id="troubleshooting">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[DIAGNÓSTICO TÉCNICO]</div>
+            <h2 class="section-heading">10. Resolução de problemas (Troubleshooting) & FAQ</h2>
+          </div>
+          <div class="section-acc-num">SEC.CAT-10</div>
+        </div>
+
+        <h3 class="subsection-heading">Tabela de Diagnóstico e Resolução de Erros</h3>
+        <div class="table-responsive-frame">
+          <table class="swiss-table">
+            <thead>
+              <tr>
+                <th>Sintoma / Erro</th>
+                <th>Causa Provável</th>
+                <th>Ação de Resolução</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono">ImportError: cannot import name 'baguet_sdk'</td>
+                <td>Ambiente Python incorreto ou pacote ausente</td>
+                <td>Ative o ambiente virtual correto (<code>source .venv/bin/activate</code>); confirme a instalação com <code>python -m pip show baguet</code>.</td>
+              </tr>
+              <tr>
+                <td class="mono">Erro de núcleo Rust nativo ausente</td>
+                <td>Pacote sem biblioteca nativa compilada para a arquitetura</td>
+                <td>Instale a versão oficial para seu sistema (<code>x86_64</code> ou <code>arm64</code>). Não copie bibliotecas dinâmicas (<code>.so</code>/<code>.dylib</code>/<code>.dll</code>) entre sistemas operacionais diferentes.</td>
+              </tr>
+              <tr>
+                <td class="mono td-highlight">BaguetIntegrityError: Violação de integridade detectada</td>
+                <td>Arquivo truncado, corrompido em disco (<em>bit-rot</em>) ou com hash SHA-256 divergente</td>
+                <td>O motor opera em modo <em>fail-closed</em>. Verifique o tamanho do arquivo, confira o backup e inspecione o cabeçalho executando <code>baguet info &lt;arquivo&gt;</code>.</td>
+              </tr>
+              <tr>
+                <td class="mono td-highlight">BaguetSecurityError: Bomba de descompressão bloqueada</td>
+                <td>Saída excede o teto de segurança em memória (<code>MAX_DECOMPRESSED_BYTES</code>, padrão 64 MB)</td>
+                <td>Para arquivos volumosos, utilize o motor de streaming paralelo (<code>baguet stream-compress</code>) ou instancie o motor elevando o teto: <code>BaguetEngine(max_decompressed_bytes=1024*1024*1024)</code>.</td>
+              </tr>
+              <tr>
+                <td class="mono td-highlight">BaguetSecurityError: Pacote marcado como keyed exige chave BGT-AE</td>
+                <td>Arquivo gravado com criptografia autenticada (<code>AES-256-SIV</code>) e a chave simétrica não foi fornecida</td>
+                <td>Forneça a chave correspondente: <code>baguet decompress arquivo.bgt restaurado.bin --key "sua-chave"</code> ou no SDK: <code>BaguetEngine(license_key=b"sua-chave")</code>.</td>
+              </tr>
+              <tr>
+                <td class="mono td-highlight">BaguetSecurityError: Token BGTL1 inválido ou expirado</td>
+                <td>Assinatura do token inválida, chave não confiável ou prazo expirado fora da carência</td>
+                <td>Verifique se a data do sistema está correta e solicite a renovação da credencial; durante o período de carência (<em>grace period</em>), o motor continua operando normalmente.</td>
+              </tr>
+              <tr>
+                <td class="mono">BaguetPriorMismatchError: Prior incompatível</td>
+                <td>Arquivo foi compactado com um dicionário de domínio específico que não foi fornecido na restauração</td>
+                <td>Forneça o arquivo <code>.bgtpr</code> original utilizado durante a compressão: <code>baguet decompress arquivo.bgt saida.bin --prior dominio.bgtpr</code>.</td>
+              </tr>
+              <tr>
+                <td class="mono">Address already in use ao iniciar o Studio</td>
+                <td>A porta local 8765 está sendo utilizada por outra instância</td>
+                <td>Especifique uma porta alternativa: <code>baguet studio --port 9000</code>.</td>
+              </tr>
+              <tr>
+                <td class="mono">Studio desconectado ou em modo demonstração</td>
+                <td>Página foi aberta como arquivo estático (<code>file://</code>) em vez de iniciar o servidor</td>
+                <td>Inicie pelo terminal com <code>baguet studio</code> e acerte a URL <code>http://127.0.0.1:8765/</code> no navegador.</td>
+              </tr>
+              <tr>
+                <td class="mono td-highlight">CVE-2026-111497 / Brotli HTTP2Shell</td>
+                <td>Fluxo malformado acionando invalid block switch ou loop de buffer em libbrotli desatualizada (&lt; 1.2.1)</td>
+                <td>O BAGUET inclui guarda multi-bloco com teto de 64 KiB e trava anti-stall que aborta com segurança para <code class="mono">raw</code>. Para bloquear bibliotecas vulneráveis, defina <code class="mono">export BAGUET_REQUIRE_PATCHED_BROTLI=1</code> ou desative o probe com <code class="mono">export BAGUET_DISABLE_BROTLI_PROBE=1</code>.</td>
+              </tr>
+              <tr>
+                <td class="mono td-highlight">BaguetSecurityError: Host is not an allowed loopback authority</td>
+                <td>Acesso ao Studio local via DNS rebinding ou cabeçalho Host externo</td>
+                <td>O servidor HTTP do Studio bloqueia requisições com cabeçalho Host não local (Host Socket Guard). Acesse exclusivamente via <code class="mono">http://127.0.0.1:8765/</code> ou <code class="mono">http://localhost:8765/</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="subsection-heading">Perguntas Frequentes (FAQ)</h3>
+
+        <div class="lab-plate lab-plate-note">
+          <div class="lab-plate-header">
+            <span class="lab-plate-tag">FAQ // QUESTÃO 01</span>
+            <span>ACESSO A DADOS & CANCELAMENTO</span>
+          </div>
+          <div class="lab-plate-content">
+            <strong>P: Os arquivos comprimidos com o BAGUET podem se tornar inacessíveis caso a empresa cancele a assinatura?</strong><br>
+            <strong>R:</strong> Não. Todas as rotinas de leitura, descompressão universal (<code>.bgt</code>), reversão de contêineres (<code>.bgtu</code>) e mapeamento em memória (<code>mmap</code>) são regidas pela licença de código aberto permissiva <strong>MIT</strong>. Você tem a garantia contratual e técnica de acessar e descompactar seus dados para sempre sem custos adicionais.
+          </div>
+        </div>
+
+        <div class="lab-plate lab-plate-note">
+          <div class="lab-plate-header">
+            <span class="lab-plate-tag">FAQ // QUESTÃO 02</span>
+            <span>INTEGRIDADE EM MODELOS DE IA</span>
+          </div>
+          <div class="lab-plate-content">
+            <strong>P: O BAGUET altera em alguma casa decimal os pesos de modelos de IA?</strong><br>
+            <strong>R:</strong> Não. O BAGUET opera com reconstrução <strong>100% bit-exact</strong>. Os tensores restaurados retornam rigorosamente os mesmos bits IEEE 754 originais, validados automaticamente por assinatura SHA-256.
+          </div>
+        </div>
+
+        <div class="lab-plate lab-plate-note">
+          <div class="lab-plate-header">
+            <span class="lab-plate-tag">FAQ // QUESTÃO 03</span>
+            <span>SIGILO & CONFORMIDADE REGULATÓRIA</span>
+          </div>
+          <div class="lab-plate-content">
+            <strong>P: É seguro utilizar o BAGUET com dados confidenciais ou protegidos por sigilo (LGPD, GDPR, HIPAA)?</strong><br>
+            <strong>R:</strong> Sim. O BAGUET opera 100% localmente no hardware da sua empresa, sem chamadas externas para a internet e sem telemetria. Para proteção contra vazamentos em repouso, o motor oferece a blindagem <strong><code>BGT-AE</code> (AES-256-SIV — RFC 5297)</strong> com derivação <code>HKDF-SHA256</code>.
+          </div>
+        </div>
+
+        <div class="lab-plate lab-plate-note">
+          <div class="lab-plate-header">
+            <span class="lab-plate-tag">FAQ // QUESTÃO 04</span>
+            <span>LIMITES MATEMÁTICOS DE COMPRESSÃO</span>
+          </div>
+          <div class="lab-plate-content">
+            <strong>P: O BAGUET sempre reduz o tamanho de qualquer arquivo?</strong><br>
+            <strong>R:</strong> Não. Nenhum algoritmo de compressão sem perdas matematicamente viável pode reduzir qualquer sequência arbitrária de bytes (pelo Princípio da Casa dos Pombos). Para dados já compactados ou totalmente aleatórios, a saída pode manter o tamanho original com um acréscimo mínimo de cabeçalho.
+          </div>
+        </div>
+
+        <div class="lab-plate lab-plate-note">
+          <div class="lab-plate-header">
+            <span class="lab-plate-tag">FAQ // QUESTÃO 05</span>
+            <span>EXPIRAÇÃO DE ASSINATURA & CARÊNCIA</span>
+          </div>
+          <div class="lab-plate-content">
+            <strong>P: O que acontece quando a licença de produção expira?</strong><br>
+            <strong>R:</strong> O motor ativa o período de carência (<em>grace period</em>) embutido criptograficamente no token (7 dias para Pro, 15 dias para Growth e 90 dias para Enterprise), mantendo todas as operações ativas enquanto emite avisos em log. Mesmo após o encerramento do grace period, todas as rotinas de leitura e descompressão continuam livres e ilimitadas.
+          </div>
+        </div>
+
+        <div class="lab-plate lab-plate-note">
+          <div class="lab-plate-header">
+            <span class="lab-plate-tag">FAQ // QUESTÃO 06</span>
+            <span>BLINDAGEM DE SUPPLY-CHAIN & MITIGAÇÃO CVE-2026-111497</span>
+          </div>
+          <div class="lab-plate-content">
+            <strong>P: Como o BAGUET protege contra vulnerabilidades em compressores legados externos (ex.: CVE-2026-111497 / Brotli HTTP2Shell)?</strong><br>
+            <strong>R:</strong> O motor nativo em Rust do BAGUET é 100% isolado e imune a essa falha. Na camada de pré-desempacotamento de codecs de terceiros, o BAGUET implementa uma guarda multi-bloco com trava anti-stall que detecta payloads maliciosos e aborta imediatamente para o modo <code>raw</code> seguro. Em ambientes de alta segurança, a variável <code>BAGUET_REQUIRE_PATCHED_BROTLI=1</code> exige <code>libbrotli &gt;= 1.2.1</code> e <code>BAGUET_DISABLE_BROTLI_PROBE=1</code> desativa completamente o desempacotador Brotli.
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           SEÇÃO 11: GLOSSÁRIO RÁPIDO
+           ====================================================================== -->
+      <section class="doc-section" id="glossario">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[TERMINOLOGIA TÉCNICA]</div>
+            <h2 class="section-heading">11. Glossário rápido</h2>
+          </div>
+          <div class="section-acc-num">SEC.CAT-11</div>
+        </div>
+
+        <ul class="catalog-list">
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[GL-01]</span>
+            <div><strong>Lossless:</strong> Reconstrução que reproduz rigorosamente a mesma sequência de bits e bytes originais, validada por conferência de integridade SHA-256.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[GL-02]</span>
+            <div><strong>Compute-on-Compressed-Data:</strong> Execução de operações matemáticas (busca vetorial, atenção e álgebra linear) diretamente sobre os dados em seu formato compactado, sem descompressão prévia.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[GL-03]</span>
+            <div><strong>KV Cache:</strong> Tensores de chaves e valores acumulados durante a inferência sequencial de modelos de linguagem (LLMs).</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[GL-04]</span>
+            <div><strong>Sketch Pruning:</strong> Poda geométrica de subespaços vetoriais com limites exatos de Cauchy-Schwarz, descartando blocos irrelevantes sem necessidade de cálculo denso.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[GL-05]</span>
+            <div><strong>Virtual Slab Pool:</strong> Cofre em arquivo único que organiza múltiplos registros ou arquivos lógicos com recuperação e validação em tempo <em>O(1)</em>.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[GL-06]</span>
+            <div><strong>Prior de Domínio:</strong> Matriz estatística contextual treinada em amostras reais de dados para otimizar a entropia de fluxos repetitivos.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[GL-07]</span>
+            <div><strong>BGT-AE:</strong> Camada de criptografia autenticada determinística baseada no algoritmo AES-256-SIV (RFC 5297) com derivação de chaves HKDF-SHA256 (RFC 5869).</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[GL-08]</span>
+            <div><strong>Loopback:</strong> Endereço de rede local restrito estritamente à própria máquina hospedeira (<code>127.0.0.1</code>), impedindo conexões externas não autorizadas.</div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ======================================================================
+           SEÇÃO 12 & 13: DOCUMENTOS LEGAIS & GOVERNANÇA (TERMOS & PRIVACIDADE)
+           ====================================================================== -->
+      <section class="doc-section" id="documentos-legais">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[ESPECIFICAÇÕES JURÍDICAS &amp; COMPLIANCE]</div>
+            <h2 class="section-heading">12. Termos de Uso, Licenciamento &amp; Privacidade</h2>
+          </div>
+          <div class="section-acc-num">SEC.CAT-LEGAL</div>
+        </div>
+
+        <p>
+          Em conformidade com a arquitetura modular do BAGUET, as declarações contratuais, a matriz dual de licenciamento de software (BUSL-1.1 AND MIT), a certificação de autoria e integridade do código e a governança de dados foram desmembrados em documentos soberanos dedicados:
+        </p>
+
+        <div class="catalog-metadata-grid" style="margin: 28px 0;">
+          <div class="metadata-cell">
+            <div class="metadata-label">DOCUMENTO 02</div>
+            <div class="metadata-value"><a href="terms.html" style="color: var(--accent-swiss); text-decoration: none; font-weight: 700;">[02] TERMOS &amp; LICENÇA &rarr;</a></div>
+            <p style="font-size: 12px; color: var(--ink-muted); margin-top: 8px; margin-bottom: 0;">Termos de Uso, Licença BUSL-1.1 AND MIT, Garantia de Zero Vendor Lock-in e Software Copyright com certificação de anterioridade criptográfica.</p>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">DOCUMENTO 03</div>
+            <div class="metadata-value"><a href="privacy.html" style="color: var(--accent-swiss); text-decoration: none; font-weight: 700;">[03] POLÍTICA DE PRIVACIDADE &rarr;</a></div>
+            <p style="font-size: 12px; color: var(--ink-muted); margin-top: 8px; margin-bottom: 0;">Princípio Zero Telemetry by Design, segurança local loopback 127.0.0.1, ausência de cookies de rastreamento e conformidade LGPD, GDPR e HIPAA.</p>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">DOCUMENTO 04</div>
+            <div class="metadata-value"><a href="litepaper.html" style="color: var(--accent-swiss); text-decoration: none; font-weight: 700;">[04] LITEPAPER &rarr;</a></div>
+            <p style="font-size: 12px; color: var(--ink-muted); margin-top: 8px; margin-bottom: 0;">Especificação Arquitetural de Memória Algébrica Bijetiva, Classificação IPC e Publicação Defensiva Internacional (OMPI / WIPO).</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           ANEXO A — INVENTÁRIO DA INTERFACE PYTHON DOCUMENTADA
+           ====================================================================== -->
+      <section class="doc-section" id="anexo-a">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[CATÁLOGO DE SÍMBOLOS]</div>
+            <h2 class="section-heading">Anexo A — Inventário da interface Python documentada</h2>
+          </div>
+          <div class="section-acc-num">ANX.CAT-A</div>
+        </div>
+
+        <h3 class="subsection-heading">Namespace <code>baguet_sdk.core</code></h3>
+        <ul class="catalog-list">
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[CLS]</span>
+            <div><strong>Classes e Motores:</strong> <code>BaguetEngine</code>, <code>BaguetPriorDictionary</code>, <code>BaguetPriorTrainer</code>, <code>BaguetVirtualSlabPool</code>, <code>BaguetStreamEngine</code>, <code>BaguetShareableEnvelope</code>, <code>CanonicalBitStream</code>.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[EXC]</span>
+            <div><strong>Exceções:</strong> <code>BaguetError</code>, <code>BaguetSecurityError</code>, <code>BaguetIntegrityError</code>, <code>BaguetContingencyWarning</code>, <code>BaguetPriorMismatchError</code>, <code>BaguetNotFoundError</code>.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[OPS]</span>
+            <div><strong>Operações:</strong> <code>compress_bytes</code>, <code>decompress_bytes</code>, <code>inspect_file_info</code>.</div>
+          </li>
+        </ul>
+
+        <h3 class="subsection-heading">Namespace <code>baguet_sdk.ai</code></h3>
+        <ul class="catalog-list">
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[AI]</span>
+            <div>
+              <strong>Kernels Tensoriais e IA:</strong> <code>compress_kv_cache</code>, <code>decompress_kv_cache</code>, <code>BaguetKVCacheOffloader</code>, <code>compressed_kv_attention_forward</code>, <code>compressed_kv_attention_fp16</code>, <code>compressed_linear_forward</code>, <code>compressed_linear_forward_bf16</code>, <code>compressed_linear_forward_fp32</code>, <code>compress_embeddings</code>, <code>decompress_embeddings</code>, <code>search_compressed_embeddings_topk</code>, <code>build_embedding_sketch_index</code>, <code>query_compressed_embeddings_topk</code>, <code>compress_tensor_progressive</code>, <code>decompress_tensor_progressive</code>, <code>compress_safetensors_dict</code>, <code>decompress_safetensors_dict</code>, <code>compress_safetensors_delta</code>, <code>decompress_safetensors_delta</code>, <code>open_mmap_safetensors</code>, <code>decompress_safetensors_tensor_mmap</code>, <code>extract_surprisal_ranks</code>, <code>reconstruct_from_ranks</code>, <code>BaguetCompressedLinear</code>.
+            </div>
+          </li>
+        </ul>
+
+        <h3 class="subsection-heading">Namespace <code>baguet_sdk.media</code></h3>
+        <ul class="catalog-list">
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[MED]</span>
+            <div>
+              <strong>Codecs Multimídia e Transcodificação:</strong> <code>compress_image_rgb</code>, <code>decompress_image_rgb</code>, <code>compress_audio_pcm16</code>, <code>decompress_audio_pcm16</code>, <code>compress_video_3d</code>, <code>decompress_video_3d</code>, <code>transcode_compressed</code>, <code>untranscode_compressed</code>.
+            </div>
+          </li>
+        </ul>
+
+        <h3 class="subsection-heading">Namespace <code>baguet_sdk.license</code></h3>
+        <ul class="catalog-list">
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[LIC]</span>
+            <div><strong>Governança e Faturamento:</strong> <code>BaguetLicenseManager</code>, <code>BaguetCryptographicReceipt</code>, <code>BaguetUpdateManager</code>, <code>BaguetStripeBillingManager</code>.</div>
+          </li>
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[METH]</span>
+            <div><strong>Métodos Principais:</strong> <code>verify_license_token</code>, <code>save_local_license</code>, <code>load_local_license</code>, <code>refresh_license_token_if_needed</code>, <code>verify_receipt</code>, <code>verify_update_manifest</code>, <code>public_status</code>, <code>public_billing_urls</code>, <code>create_checkout_session</code>, <code>verify_session</code>, <code>handle_webhook</code>.</div>
+          </li>
+        </ul>
+
+        <h3 class="subsection-heading">Namespace <code>baguet_sdk.studio</code></h3>
+        <ul class="catalog-list">
+          <li class="catalog-list-item">
+            <span class="catalog-item-bullet">[STU]</span>
+            <div><strong>Interface e Utilidades Locais:</strong> <code>BaguetLocalDashboard</code>, <code>BaguetStripeBillingManager</code>, <code>BaguetI18n</code>, <code>install_desktop_integration</code>, <code>build_desktop_installer_bundle</code>, <code>audit_roi</code>, <code>generate_audit_receipt</code>.</div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ======================================================================
+           ANEXO B — OPERAÇÕES AVANÇADAS DO MOTOR (BAGUETENGINE)
+           ====================================================================== -->
+      <section class="doc-section" id="anexo-b">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[SNIPPETS AVANÇADOS]</div>
+            <h2 class="section-heading">Anexo B — Operações avançadas do motor (<code>BaguetEngine</code>)</h2>
+          </div>
+          <div class="section-acc-num">ANX.CAT-B</div>
+        </div>
+
+        <h3 class="subsection-heading">Pesos de modelos e tensores PyTorch</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // MODEL WEIGHTS & TORCH TENSORS</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">import numpy as np
+from baguet_sdk import core
+
+engine = core.BaguetEngine()
+weights = {
+    "layer.weight": np.arange(16, dtype=np.float16).reshape(4, 4),
+    "layer.bias": np.zeros((4,), dtype=np.float32),
+}
+model_packet, bits = engine.compress_model_weights(weights)
+restored_weights = engine.decompress_model_weights(model_packet)
+assert np.array_equal(restored_weights["layer.weight"], weights["layer.weight"])
+
+tensor = np.arange(32, dtype=np.float16).reshape(2, 4, 4)
+tensor_packet, tensor_bits = engine.compress_torch_tensor(tensor)
+restored_value = engine.decompress_torch_tensor(tensor_packet)
+restored_tensor = restored_value.detach().cpu().numpy() if hasattr(restored_value, "detach") else restored_value
+assert np.array_equal(restored_tensor, tensor)</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">Catálogo indexado e acesso a um tensor individual</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // SAFETENSORS INDEXADO</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">import numpy as np
+from baguet_sdk import core
+
+engine = core.BaguetEngine()
+tensors = {"layer.weight": np.ones((4, 4), dtype=np.float16)}
+packet, bits = engine.compress_safetensors_indexed(tensors)
+manifest = engine.inspect_safetensors_manifest(packet)
+single_tensor = engine.decompress_safetensors_tensor(packet, "layer.weight")
+assert np.array_equal(single_tensor, tensors["layer.weight"])</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">Base progressiva, ranks de surpresa e entropia</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // PROGRESSIVO & SHANNON ENTROPY</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">import numpy as np
+from baguet_sdk import core
+
+engine = core.BaguetEngine()
+tensor = np.ones((8, 8), dtype=np.float16)
+progressive_packet, metadata = engine.compress_tensor_progressive(
+    tensor, trim_mantissa_bits=7
+)
+base_packet = engine.extract_progressive_base_stream(progressive_packet)
+preview = engine.decompress_tensor_progressive(base_packet, full_precision=False)
+
+ranks = [0, 1, 3, 0, 2]
+encoded_ranks = engine.encode_ranks_crm_tagk(ranks)
+decoded_ranks = engine.decode_ranks_crm_tagk(encoded_ranks)
+assert decoded_ranks == ranks
+
+entropy = engine.shannon_entropy(b"amostra de telemetria")
+assert entropy > 0.0</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">Licença local e renovação</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // GERENCIAMENTO DE CREDENCIAIS</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">import os
+from baguet_sdk import license
+
+token = os.environ.get("BAGUET_LICENSE_TOKEN")
+if token:
+    license.BaguetLicenseManager.save_local_license(token)
+    stored = license.BaguetLicenseManager.load_local_license()
+    verified = license.BaguetLicenseManager.verify_license_token(stored)</code></pre>
+        </div>
+
+        <h3 class="subsection-heading">Servidor do Studio e Dashboard via Python</h3>
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">PYTHON // SUBINDO O STUDIO VIA SDK</span>
+              <span class="terminal-lang-badge">python</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-python">from baguet_sdk import core, studio
+
+engine = core.BaguetEngine()
+dashboard = studio.BaguetLocalDashboard(engine=engine)
+server = dashboard.make_server(host="127.0.0.1", port=8765)
+server.server_close()</code></pre>
+        </div>
+      </section>
+
+      <!-- RODAPÉ FINAL MONUMENTAL -->
+      <footer style="margin-top: 100px; padding-top: 32px; border-top: 2px solid var(--ink-primary); font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <strong>BAGUET v1.0.0</strong> // SOILORE TECH &amp; ECOSYSTEM CONTRIBUTORS
+        </div>
+        <div>
+          C-ABI: RUST-SIMD (AVX2/NEON)
+        </div>
+        <div>
+          LICENCIAMENTO: <span class="swiss-red">BUSL-1.1 AND MIT</span>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- BOTÃO VOLTAR AO TOPO -->
+  <button class="back-to-top-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+    <span>[ ↑ TOPO ]</span>
+  </button>
+
+  <!-- TOAST DE NOTIFICAÇÃO -->
+  <div id="toast" class="toast-indicator">CÓDIGO COPIADO [OK]</div>
+
+  <!-- SCRIPT DE INTERATIVIDADE, CÓPIA E FILTRO (100% VANILLA OFFLINE) -->
+  <script>
+    // 1. Função de cópia de snippets com feedback no botão e toast
+    function copySnippet(button) {
+      const chassis = button.closest('.terminal-chassis');
+      if (!chassis) return;
+      const codeEl = chassis.querySelector('code');
+      if (!codeEl) return;
+
+      const text = codeEl.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = button.innerText;
+        button.innerText = '[ COPIADO! ]';
+        button.style.background = '#D92B2B';
+        button.style.borderColor = '#D92B2B';
+
+        showToast('SNIPPET COPIADO COM SUCESSO [OK]');
+
+        setTimeout(() => {
+          button.innerText = originalText;
+          button.style.background = '';
+          button.style.borderColor = '';
+        }, 2000);
+      }).catch(err => {
+        console.error('Falha ao copiar:', err);
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      if (!toast) return;
+      toast.innerText = msg;
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 2400);
+    }
+
+    // 2. Filtro em tempo real no índice curatorial da barra lateral
+    function filterSidebarIndex() {
+      const input = document.getElementById('sidebar-filter-input');
+      const filter = input.value.toUpperCase();
+      const list = document.getElementById('sidebar-nav-list');
+      const items = list.getElementsByTagName('li');
+
+      for (let i = 0; i < items.length; i++) {
+        const link = items[i].getElementsByTagName('a')[0];
+        if (link) {
+          const txtValue = link.textContent || link.innerText;
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            items[i].style.display = '';
+          } else {
+            items[i].style.display = 'none';
+          }
+        }
+      }
+    }
+
+    // 3. ScrollSpy para destacar a seção ativa no menu
+    window.addEventListener('scroll', () => {
+      const sections = document.querySelectorAll('section.doc-section, article.catalog-monumental-card');
+      const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+      let currentId = '';
+
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop - 120;
+        if (window.pageYOffset >= sectionTop) {
+          currentId = section.getAttribute('id');
+        }
+      });
+
+      if (currentId) {
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === '#' + currentId) {
+            link.classList.add('active');
+          }
+        });
+      }
+    });
+
+    // 4. Tokenizador leve e não invasivo de realce de sintaxe em tempo de carregamento
+    document.addEventListener('DOMContentLoaded', () => {
+      const codeBlocks = document.querySelectorAll('code.language-python');
+      const pythonKeywords = /\b(def|class|import|from|return|assert|print|if|else|elif|for|in|while|try|except|with|as|and|or|not|None|True|False|is|lambda)\b/g;
+      
+      codeBlocks.forEach(block => {
+        let html = block.innerHTML;
+        // Evita re-tokenizar se já houver spans
+        if (html.includes('tok-')) return;
+
+        // Comentários
+        html = html.replace(/(#.*$)/gm, '<span class="tok-cm">$1</span>');
+        // Strings duplas e simples
+        html = html.replace(/(b?".*?"|'.*?')/g, '<span class="tok-str">$1</span>');
+        // Números
+        html = html.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="tok-num">$1</span>');
+        // Palavras-chave
+        html = html.replace(pythonKeywords, '<span class="tok-kw">$1</span>');
+
+        block.innerHTML = html;
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BAGUET v1.0.0 // FIPS 140-3 ROADMAP &amp; CRYPTOGRAPHY</title>
+  <meta name="description" content="Roadmap de Certificação FIPS 140-3, limites do módulo criptográfico e validação NIST para o ecossistema Baguet.">
+  <link rel="icon" type="image/png" href="../studio/baguet-favicon-white-512.png">
+  <style>
+    :root {
+      --bg-museum: #F6F5F0;
+      --bg-plinth: #EFECE6;
+      --bg-card: #FFFFFF;
+      --bg-terminal: #0A0A0A;
+      --ink-primary: #0A0A0A;
+      --ink-muted: #6E6D68;
+      --accent-swiss: #D92B2B;
+      --hairline: 1px solid var(--ink-primary);
+      --hairline-subtle: 1px solid rgba(10, 10, 10, 0.15);
+      --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Berkeley Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+      --header-h: 52px;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      border-radius: 0px !important;
+      -webkit-font-smoothing: antialiased;
+    }
+    html {
+      background-color: var(--bg-museum);
+      color: var(--ink-primary);
+      font-family: var(--font-display);
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .top-bar {
+      height: var(--header-h);
+      border-bottom: var(--hairline);
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.05em;
+    }
+    .brand-title {
+      font-weight: 700;
+      color: var(--ink-primary);
+    }
+    .container {
+      max-width: 960px;
+      margin: 40px auto;
+      padding: 0 24px;
+      flex: 1;
+    }
+    .doc-header {
+      border: var(--hairline);
+      background: var(--bg-card);
+      padding: 32px;
+      margin-bottom: 32px;
+    }
+    .doc-code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-swiss);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-size: 28px;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    p {
+      line-height: 1.6;
+      color: var(--ink-primary);
+      margin-bottom: 16px;
+    }
+    .clause-card {
+      border: var(--hairline);
+      background: var(--bg-card);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .clause-title {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      border-bottom: var(--hairline-subtle);
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    .footer {
+      border-top: var(--hairline);
+      background: var(--bg-card);
+      padding: 24px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <span class="brand-title">BAGUET // FIPS 140-3 ROADMAP</span>
+    <span>LEGAL // FIPS-1.0</span>
+  </div>
+  <div class="container">
+    <div class="doc-header">
+      <div class="doc-code">SPECIFICATION 03 // FIPS 140-3 ROADMAP</div>
+      <h1>Roadmap FIPS 140-3 &amp; Limites Criptográficos</h1>
+      <p>Planejamento de validação criptográfica sob as normas FIPS 140-3 do National Institute of Standards and Technology (NIST) e alinhamento com governos e instituições financeiras.</p>
+    </div>
+    <div class="clause-card">
+      <div class="clause-title">1. Limites do Módulo Criptográfico</div>
+      <p>O módulo criptográfico Baguet opera como uma biblioteca de software contida, isolando os vetores de assinatura Ed25519 (RFC 8032), derivação HMAC-SHA-256 e cifra autenticada AES-256-SIV em memória protegida contra vazamentos de canais laterais.</p>
+    </div>
+    <div class="clause-card">
+      <div class="clause-title">2. Programa de Validação de Algoritmos Criptográficos (CAVP)</div>
+      <p>Alinhamento dos algoritmos SHA-256, HMAC e Ed25519 para submissão aos laboratórios acreditados pelo NVLAP, garantindo que instalações governamentais de segurança nacional possam empregar o Baguet em modo aprovado.</p>
+    </div>
+  </div>
+  <div class="footer">
+    &copy; Soilore Tech. Baguet v1.0.0. Kunsthalle Basel &times; Dieter Rams Architecture.
+  </div>
+</body>
+</html>

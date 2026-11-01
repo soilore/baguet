@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel", "cryptography>=41"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "baguet"
+version = "1.0.0"
+description = "BAGUET public SDK for lossless compression, AI tensor paths, media, and local Studio APIs"
+requires-python = ">=3.11"
+license = { text = "BUSL-1.1 AND MIT" }
+dependencies = [
+  "numpy>=1.24",
+  "cryptography>=41",
+]
+
+[project.optional-dependencies]
+torch = ["torch>=2.1", "ml_dtypes>=0.3"]
+
+[project.scripts]
+baguet = "baguet_sdk:main"
+baguet-studio = "baguet_sdk:studio_main"
+baguet-landing = "baguet_sdk:landing_main"
+baguet-desktop-compress = "baguet_sdk:desktop_compress_main"
+
+[tool.setuptools]
+py-modules = ["baguet_sdk"]
+include-package-data = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

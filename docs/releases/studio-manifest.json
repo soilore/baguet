@@ -1,0 +1,55 @@
+{
+  "artifacts": {
+    "darwin-arm64": {
+      "sha256": "a6f73d5fb7dae8478113a750391a0e838d61867f646aeced4234620da7b31dc3",
+      "url": "https://baguet.soilore.com/releases/baguet-1.0.0-darwin-arm64.tar.gz"
+    },
+    "linux-x86_64": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "url": "https://baguet.soilore.com/releases/baguet-1.0.0-linux-x86_64.tar.gz"
+    },
+    "win-amd64": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "url": "https://baguet.soilore.com/releases/baguet-1.0.0-win-amd64.zip"
+    }
+  },
+  "conda_spec": "conda install -c soilore baguet=1.0.0",
+  "download_url": "https://baguet.soilore.com/#pricing",
+  "engine_version": "8.9.5",
+  "expires_at": 1825075074,
+  "issued_at": 1793539074,
+  "key_id": "bgt-root-2026-01",
+  "latest_sdk_version": "1.0.0",
+  "min_supported_sdk_version": "1.0.0",
+  "notifications": [
+    {
+      "action_url": "https://baguet.soilore.com/legal/guide.html",
+      "created_at": 1793539074,
+      "expires_at": 1825075074,
+      "id": "notif-v1.0.0-launch",
+      "message": {
+        "en": "Frozen Rust core v8.9.5 with Ed25519 verification and active B2B Enterprise support.",
+        "es": "Frozen Rust core v8.9.5 with Ed25519 verification and active B2B Enterprise support.",
+        "pt-BR": "Motor Rust congelado v8.9.5 com verifica\u00e7\u00e3o Ed25519 e suporte B2B Enterprise ativo.",
+        "ru": "Frozen Rust core v8.9.5 with Ed25519 verification and active B2B Enterprise support.",
+        "zh-CN": "Frozen Rust core v8.9.5 with Ed25519 verification and active B2B Enterprise support."
+      },
+      "min_tier": "all",
+      "severity": "info",
+      "title": {
+        "en": "Baguet SDK v1.0.0 (Engine v8.9.5) Available",
+        "es": "Baguet SDK v1.0.0 (Engine v8.9.5) Available",
+        "pt-BR": "Baguet SDK v1.0.0 (Engine v8.9.5) Dispon\u00edvel",
+        "ru": "Baguet SDK v1.0.0 (Engine v8.9.5) Available",
+        "zh-CN": "Baguet SDK v1.0.0 (Engine v8.9.5) Available"
+      }
+    }
+  ],
+  "public_key_hex": "23b11828301daf36688ba58ac1e863108cecde14aa4b8751432448548155f537",
+  "pypi_spec": "baguet==1.0.0",
+  "release_date": "2026-11-01",
+  "schema": "baguet.studio.manifest.v1",
+  "sdk_milestone": "9.3.0",
+  "sequence": 1,
+  "signature": "0782c84d71109fbbd0c45f7b40ad968971b3576adf5ce7c56c8608d5606742e80e457ca622daabce5d87c573733110509c29a13d4cdbac5428c6359ef8575c0f"
+}

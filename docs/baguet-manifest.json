@@ -1,0 +1,141 @@
+{
+  "$schema": "https://baguet.soilore.com/schemas/manifest-v1.json",
+  "name": "Baguet",
+  "version": "1.0.0",
+  "sdk_version": "1.0.0",
+  "engine_version": "8.9.5",
+  "engine_core_version": "8.9.5",
+  "sdk_milestone": "9.3.0",
+  "release_type": "canonical_commercial_release",
+  "release_date": "2026-10-29",
+  "engine": "Rust-Native SIMD (AVX2/FMA + ARM64 NEON)",
+  "vendor": "Soilore Tech",
+  "license": "Baguet Community & Commercial License v1.0 (BUSL-1.1 AND MIT // Free Public Decompression Forever)",
+  "license_token_format": "BGTL1",
+  "surfaces": {
+    "landing": "/landing",
+    "studio": "/studio",
+    "legal": "/legal"
+  },
+  "ecosystem": {
+    "docs": "/legal/guide.html",
+    "litepaper": "/legal/litepaper.html",
+    "github": "https://github.com/soilore/baguet",
+    "contact": "contact@soilore.com"
+  },
+  "modules": {
+    "baguet_sdk.core": {
+      "description": "Core tensor packing, orthogonal bit-plane engine, entropy coding and zero-copy mmap slab inspector.",
+      "formats": [".bgt", ".bgtv", ".bgts"]
+    },
+    "baguet_sdk.ai": {
+      "description": "Sub-linear RAG Top-K sketch search, Online Flash-SDPA attention, BaguetKVCacheOffloader, BaguetCompressedLinear and progressive AllReduce.",
+      "formats": [".bgtt", ".bgtd", ".bgtp", ".bgttile", ".bgtpr"]
+    },
+    "baguet_sdk.media": {
+      "description": "Harmonic & Volumetric predictor for PCM16 audio, RGB images, 3D volumetric video and BGTU6 universal bit-exact transcoder.",
+      "formats": [".bgtu"]
+    },
+    "baguet_sdk.license": {
+      "description": "Ed25519 offline token validator (BGTL1), node metering, air-gapped activation and grace period controller.",
+      "formats": [".bgtupd"]
+    },
+    "baguet_sdk.studio": {
+      "description": "Native multi-OS desktop studio application (macOS, Windows, Linux) and shell context menu integration.",
+      "formats": [".bgt.html"]
+    }
+  },
+  "formats": [
+    { "ext": ".bgt", "name": "Baguet Universal Tensor & Slab", "compression": "Orthogonal Bit-Plane + SIMD Entropy", "zero_decompression": false },
+    { "ext": ".bgtu", "name": "Baguet Universal Transcoder", "compression": "Multi-stream Algebraic Re-compression", "zero_decompression": false },
+    { "ext": ".bgtt", "name": "Baguet SafeTensors Catalog", "compression": "Zero-Copy Layer-Indexed mmap", "zero_decompression": true },
+    { "ext": ".bgtd", "name": "Baguet Differential LoRA Checkpoint", "compression": "Base-Bound Bit-Plane Delta", "zero_decompression": false },
+    { "ext": ".bgtp", "name": "Baguet Progressive Multi-Tier Tensor", "compression": "Hot-Start BF16 + Progressive Refinement", "zero_decompression": true },
+    { "ext": ".bgts", "name": "Baguet Parallel Partitioned Stream", "compression": "Multi-Worker Chunked SIMD Stream", "zero_decompression": true },
+    { "ext": ".bgtv", "name": "Baguet Acid Structured Vault", "compression": "Indexed Columnar Slab O(1)", "zero_decompression": true },
+    { "ext": ".bgttile", "name": "Baguet Hierarchical KV-Cache Tile", "compression": "Hierarchical Attention Block Index", "zero_decompression": true },
+    { "ext": ".bgtpr", "name": "Baguet Domain Prior Model", "compression": "Spectral Empirical Probability Prior", "zero_decompression": false },
+    { "ext": ".bgt.html", "name": "Baguet Self-Extracting Standalone HTML", "compression": "Zero-Install WebAssembly Polyglot", "zero_decompression": false }
+  ],
+  "benchmarks_audited": {
+    "scenarios_evaluated": 53,
+    "total_input_bytes": 1922921,
+    "baguet_typed_bytes": 60980,
+    "baguet_raw_bytes": 182444,
+    "global_typed_reduction_pct": 96.83,
+    "aggregate_rust_latency_ms": 55.89,
+    "aggregate_rust_latency_limit_ms": 58.0,
+    "residual_loss_bits": 0.0,
+    "highlights": {
+      "rag_fp32_reduction_ratio": 4.00,
+      "rag_sublinear_pruning_pct": 72.4,
+      "rag_exact_recall_at_k": 1.0,
+      "flash_sdpa_max_speedup": 414.8,
+      "kv_cache_fp16_reduction_ratio": 2.71,
+      "lora_bgtd6_reduction_pct": 99.36,
+      "allreduce_network_reduction_pct": 64.94,
+      "audio_pcm16_vs_flac_pct": 93.1,
+      "video_volumetric_vs_ffv1_pct": 96.1,
+      "image_rgb24_vs_png_pct": 42.9,
+      "universal_transcoder_bgtu6_pct": 88.16
+    }
+  },
+  "licensing_tiers": [
+    {
+      "id": "community",
+      "name": "TIER 00 // COMMUNITY",
+      "subtitle": "Open Reader & AI Sandbox",
+      "price_monthly_usd": 0,
+      "price_annual_usd": 0,
+      "payload_limit_bytes": 67108864,
+      "ai_kernel_limit_bytes": 16777216,
+      "max_workers": 1,
+      "features_bitmask": "0x0001",
+      "commercial_use": false,
+      "unlimited_free_decompression": true
+    },
+    {
+      "id": "pro",
+      "name": "TIER 01 // PRO",
+      "subtitle": "AI Builder",
+      "price_monthly_usd": 149,
+      "price_annual_usd": 1490,
+      "payload_limit_bytes": 8589934592,
+      "max_nodes": 8,
+      "max_workers": 16,
+      "features_bitmask": "0x0303",
+      "commercial_use": true,
+      "grace_period_days": 7
+    },
+    {
+      "id": "growth",
+      "name": "TIER 02 // GROWTH",
+      "subtitle": "AI Scale",
+      "price_monthly_usd": 599,
+      "price_annual_usd": 5990,
+      "payload_limit_bytes": 68719476736,
+      "max_nodes": 64,
+      "max_workers": 64,
+      "features_bitmask": "0x03FF",
+      "commercial_use": true,
+      "grace_period_days": 15
+    },
+    {
+      "id": "enterprise",
+      "name": "TIER 03 // ENTERPRISE",
+      "subtitle": "Hyperscale & Air-Gapped",
+      "price_monthly_usd": null,
+      "price_annual_usd": null,
+      "billing_model": "b2b_contract",
+      "contact_url": "mailto:contact@soilore.com?subject=Baguet%20Enterprise%20Contract",
+      "payload_limit_bytes": 1099511627776,
+      "max_nodes": "unlimited",
+      "max_workers": 64,
+      "features_bitmask": "0x03FF",
+      "commercial_use": true,
+      "air_gapped_key_years": "1-3",
+      "grace_period_days": 90,
+      "dedicated_sla": "24/7"
+    }
+  ]
+}

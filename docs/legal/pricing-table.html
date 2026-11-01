@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BAGUET v1.0.0 // TABELA DE PREÇOS E TIERS ENTERPRISE</title>
+  <meta name="description" content="Tabela Oficial de Preços, Tiers de Licenciamento Comercial e Condições B2B do BAGUET v1.0.0.">
+  <link rel="icon" type="image/png" href="../studio/baguet-favicon-white-512.png">
+  <style>
+    :root {
+      --bg-museum: #F6F5F0;
+      --bg-plinth: #EFECE6;
+      --bg-card: #FFFFFF;
+      --bg-terminal: #0A0A0A;
+      --ink-primary: #0A0A0A;
+      --ink-muted: #6E6D68;
+      --accent-swiss: #D92B2B;
+      --hairline: 1px solid var(--ink-primary);
+      --hairline-subtle: 1px solid rgba(10, 10, 10, 0.15);
+      --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Berkeley Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+      --header-h: 52px;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      border-radius: 0px !important;
+      -webkit-font-smoothing: antialiased;
+    }
+    html {
+      background-color: var(--bg-museum);
+      color: var(--ink-primary);
+      font-family: var(--font-display);
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .top-bar {
+      height: var(--header-h);
+      border-bottom: var(--hairline);
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.05em;
+    }
+    .brand-title {
+      font-weight: 700;
+      color: var(--ink-primary);
+    }
+    .container {
+      max-width: 960px;
+      margin: 40px auto;
+      padding: 0 24px;
+      flex: 1;
+    }
+    .doc-header {
+      border: var(--hairline);
+      background: var(--bg-card);
+      padding: 32px;
+      margin-bottom: 32px;
+    }
+    .doc-code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-swiss);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-size: 28px;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    p {
+      line-height: 1.6;
+      color: var(--ink-primary);
+      margin-bottom: 16px;
+    }
+    .pricing-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: var(--hairline);
+      background: var(--bg-card);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      margin-bottom: 24px;
+    }
+    .pricing-table th, .pricing-table td {
+      border: var(--hairline-subtle);
+      padding: 12px 16px;
+      text-align: left;
+    }
+    .pricing-table th {
+      background: var(--bg-plinth);
+      font-weight: 700;
+    }
+    .footer {
+      border-top: var(--hairline);
+      background: var(--bg-card);
+      padding: 24px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <span class="brand-title">BAGUET // ENTERPRISE PRICING TABLE</span>
+    <span>LEGAL // PRC-1.0</span>
+  </div>
+  <div class="container">
+    <div class="doc-header">
+      <div class="doc-code">SPECIFICATION 04 // COMMERCIAL TIERS</div>
+      <h1>Tabela de Preços e Tiers de Licenciamento</h1>
+      <p>Estrutura de investimento comercial para o ecossistema Baguet SDK v1.0.0 e Engine Nativo v8.9.5.</p>
+    </div>
+    <table class="pricing-table">
+      <thead>
+        <tr>
+          <th>Tier</th>
+          <th>Cota de Concorrência</th>
+          <th>Capacidade de Nós</th>
+          <th>Finalidade</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Community</strong></td>
+          <td>1 Worker</td>
+          <td>1 Nó Local</td>
+          <td>Avaliação pessoal e descompressão pública livre.</td>
+        </tr>
+        <tr>
+          <td><strong>Pro</strong></td>
+          <td>4 Workers</td>
+          <td>3 Nós Flutuantes</td>
+          <td>Estúdios multimídia e desenvolvedores individuais.</td>
+        </tr>
+        <tr>
+          <td><strong>Growth / Team</strong></td>
+          <td>16 Workers</td>
+          <td>10 Nós Flutuantes</td>
+          <td>Equipes de engenharia de IA e pipelines de dados.</td>
+        </tr>
+        <tr>
+          <td><strong>Enterprise</strong></td>
+          <td>64 Workers</td>
+          <td>Ilimitado</td>
+          <td>Grandes clusters de IA, contratos SLA e custom priors.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="footer">
+    &copy; Soilore Tech. Baguet v1.0.0. Kunsthalle Basel &times; Dieter Rams Architecture.
+  </div>
+</body>
+</html>

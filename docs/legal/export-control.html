@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BAGUET v1.0.0 // CONTROLE DE EXPORTAÇÃO &amp; COMPLIANCE</title>
+  <meta name="description" content="Declaração de Controle de Exportação (ECCN EAR99 / 5D002), conformidade com o Regulamento de Duplo Uso da UE e normas internacionais de criptografia.">
+  <link rel="icon" type="image/png" href="../studio/baguet-favicon-white-512.png">
+  <style>
+    :root {
+      --bg-museum: #F6F5F0;
+      --bg-plinth: #EFECE6;
+      --bg-card: #FFFFFF;
+      --bg-terminal: #0A0A0A;
+      --ink-primary: #0A0A0A;
+      --ink-muted: #6E6D68;
+      --accent-swiss: #D92B2B;
+      --hairline: 1px solid var(--ink-primary);
+      --hairline-subtle: 1px solid rgba(10, 10, 10, 0.15);
+      --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Berkeley Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+      --header-h: 52px;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      border-radius: 0px !important;
+      -webkit-font-smoothing: antialiased;
+    }
+    html {
+      background-color: var(--bg-museum);
+      color: var(--ink-primary);
+      font-family: var(--font-display);
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .top-bar {
+      height: var(--header-h);
+      border-bottom: var(--hairline);
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.05em;
+    }
+    .brand-title {
+      font-weight: 700;
+      color: var(--ink-primary);
+    }
+    .container {
+      max-width: 960px;
+      margin: 40px auto;
+      padding: 0 24px;
+      flex: 1;
+    }
+    .doc-header {
+      border: var(--hairline);
+      background: var(--bg-card);
+      padding: 32px;
+      margin-bottom: 32px;
+    }
+    .doc-code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-swiss);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-size: 28px;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    p {
+      line-height: 1.6;
+      color: var(--ink-primary);
+      margin-bottom: 16px;
+    }
+    .clause-card {
+      border: var(--hairline);
+      background: var(--bg-card);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .clause-title {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      border-bottom: var(--hairline-subtle);
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    .footer {
+      border-top: var(--hairline);
+      background: var(--bg-card);
+      padding: 24px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <span class="brand-title">BAGUET // EXPORT CONTROL &amp; COMPLIANCE</span>
+    <span>LEGAL // EXP-1.0</span>
+  </div>
+  <div class="container">
+    <div class="doc-header">
+      <div class="doc-code">SPECIFICATION 02 // EXPORT CONTROL COMPLIANCE</div>
+      <h1>Controle de Exportação &amp; Conformidade</h1>
+      <p>Classificação de exportação e conformidade regulatória internacional do software Baguet v1.0.0 sob os regulamentos do Bureau of Industry and Security (BIS/EAR) dos EUA e União Europeia.</p>
+    </div>
+    <div class="clause-card">
+      <div class="clause-title">1. Classificação ECCN (Export Control Classification Number)</div>
+      <p>O Baguet v1.0.0 é classificado sob o ECCN 5D002 / EAR99 dependendo do modo de distribuição (módulos públicos de descompressão utilizam licença geral TSU de acordo com 15 CFR &sect; 740.13(e)).</p>
+    </div>
+    <div class="clause-card">
+      <div class="clause-title">2. Jurisdição e Sanções Internacionais</div>
+      <p>O software não pode ser exportado, reexportado ou transferido para qualquer país, entidade ou indivíduo sujeito a embargos econômicos ou sanções financeiras aplicadas pelo Conselho de Segurança da ONU, OFAC (EUA) ou União Europeia.</p>
+    </div>
+  </div>
+  <div class="footer">
+    &copy; Soilore Tech. Baguet v1.0.0. Kunsthalle Basel &times; Dieter Rams Architecture.
+  </div>
+</body>
+</html>

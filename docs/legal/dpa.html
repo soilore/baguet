@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BAGUET v1.0.0 // DATA PROCESSING ADDENDUM (DPA)</title>
+  <meta name="description" content="Data Processing Addendum (DPA) do BAGUET v1.0.0. Cláusulas de soberania de dados, processamento local estrito, conformidade GDPR e LGPD sem telemetria.">
+  <link rel="icon" type="image/png" href="../studio/baguet-favicon-white-512.png">
+  <style>
+    :root {
+      --bg-museum: #F6F5F0;
+      --bg-plinth: #EFECE6;
+      --bg-card: #FFFFFF;
+      --bg-terminal: #0A0A0A;
+      --ink-primary: #0A0A0A;
+      --ink-muted: #6E6D68;
+      --accent-swiss: #D92B2B;
+      --accent-crypto: #14213D;
+      --hairline: 1px solid var(--ink-primary);
+      --hairline-subtle: 1px solid rgba(10, 10, 10, 0.15);
+      --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Berkeley Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+      --header-h: 52px;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      border-radius: 0px !important;
+      -webkit-font-smoothing: antialiased;
+    }
+    html {
+      background-color: var(--bg-museum);
+      color: var(--ink-primary);
+      font-family: var(--font-display);
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .top-bar {
+      height: var(--header-h);
+      border-bottom: var(--hairline);
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.05em;
+    }
+    .brand-title {
+      font-weight: 700;
+      color: var(--ink-primary);
+    }
+    .container {
+      max-width: 960px;
+      margin: 40px auto;
+      padding: 0 24px;
+      flex: 1;
+    }
+    .doc-header {
+      border: var(--hairline);
+      background: var(--bg-card);
+      padding: 32px;
+      margin-bottom: 32px;
+    }
+    .doc-code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-swiss);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-size: 28px;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    p {
+      line-height: 1.6;
+      color: var(--ink-primary);
+      margin-bottom: 16px;
+    }
+    .clause-card {
+      border: var(--hairline);
+      background: var(--bg-card);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .clause-title {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      border-bottom: var(--hairline-subtle);
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    ul {
+      margin-left: 20px;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+    .footer {
+      border-top: var(--hairline);
+      background: var(--bg-card);
+      padding: 24px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <span class="brand-title">BAGUET // DATA PROCESSING ADDENDUM</span>
+    <span>LEGAL // DPA-1.0</span>
+  </div>
+  <div class="container">
+    <div class="doc-header">
+      <div class="doc-code">SPECIFICATION 01 // DATA PROCESSING ADDENDUM</div>
+      <h1>Data Processing Addendum (DPA)</h1>
+      <p>Termos de processamento e governança de dados do software Baguet v1.0.0. Este adendo estabelece os compromissos contratuais de proteção e privacidade de dados entre a Soilore e a entidade contratante (Cliente Enterprise).</p>
+    </div>
+    <div class="clause-card">
+      <div class="clause-title">1. Natureza da Operação e Zero-Cloud Guarantee</div>
+      <p>O motor algorítmico do Baguet opera exclusivamente de modo local e em memória nos nós computacionais do Cliente. Não há transmissão, ingestão, telemetria ou armazenamento de dados em servidores da Soilore.</p>
+    </div>
+    <div class="clause-card">
+      <div class="clause-title">2. Conformidade GDPR (Art. 28) e LGPD (Art. 39)</div>
+      <p>O Cliente é o único Controlador dos dados pessoais eventualmente contidos nos fluxos comprimidos. A Soilore não atua como Operadora/Processadora de dados de produção do Cliente uma vez que o software opera de forma estritamente licenciada on-premises.</p>
+    </div>
+    <div class="clause-card">
+      <div class="clause-title">3. Soberania Criptográfica e Segurança da Informação</div>
+      <p>Todos os dados sob o modo de autenticação BGT-AE são protegidos por primitivas autenticadas de alta segurança (Ed25519 e AES-256-SIV). O Cliente detém a custódia exclusiva das chaves de criptografia e licença.</p>
+    </div>
+  </div>
+  <div class="footer">
+    &copy; Soilore Tech. Baguet v1.0.0. Kunsthalle Basel &times; Dieter Rams Architecture.
+  </div>
+</body>
+</html>

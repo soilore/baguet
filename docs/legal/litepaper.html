@@ -1,0 +1,2006 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BAGUET v1.0.0 // LITEPAPER &amp; ARQUITETURA DE MEMÓRIA ALGÉBRICA</title>
+  <meta name="description" content="Litepaper Institucional, Especificação Arquitetural e Publicação Defensiva Internacional do Protocolo BAGUET v1.0.0.">
+  <link rel="icon" type="image/png" href="../studio/baguet-favicon-white-512.png">
+
+  <!-- 
+    BAGUET v1.0.0 — OFFICIAL TECHNICAL SPECIFICATION & PROJECT DOCUMENT
+    Art Direction: Kunsthalle Basel × Dieter Rams (Braun 1965)
+    Aesthetic: Contemporary Swiss Exhibition Catalog Sheet & Physical Laboratory Instrument
+    Design Rules: 
+      - 100% Offline / Air-Gapped Ready
+      - Zero Emojis in HTML/CSS/JS
+      - Strict 0px Border-Radius everywhere (border-radius: 0px !important)
+      - Zero Neon Glow / Zero Glassmorphism Blur / Zero Cyberpunk
+      - High Legibility Monospace & Architectural Typography
+      - Standard Universal Headings, Code Delimiters & Semantic Markup
+  -->
+
+  <style>
+
+    /* ==========================================================================
+       1. DESIGN TOKENS KUNSTHALLE BASEL × DIETER RAMS (BRAUN 1965)
+       ========================================================================== */
+    :root {
+      --bg-museum: #F6F5F0;       /* Papel algodão arquitetônico cru — 60%+ espaço negativo */
+      --bg-plinth: #EFECE6;       /* Pedestal de pedra calcária / bancada de laboratório */
+      --bg-card: #FFFFFF;         /* Ficha catalográfica / chassi branco puro */
+      --bg-terminal: #0A0A0A;     /* Alumínio anodizado preto / console de comando */
+      --ink-primary: #0A0A0A;     /* Tinta preta litográfica profunda */
+      --ink-muted: #6E6D68;       /* Grafite técnico curatorial */
+      --accent-swiss: #D92B2B;    /* Vermelho Internacional Suíço cirúrgico */
+      --accent-crypto: #14213D;   /* Azul Marinho Criptográfico (Ed25519 / AES-256-SIV) */
+      --accent-green: #2E7D32;    /* Verde militar de verificação pericial */
+      
+      --hairline: 1px solid var(--ink-primary);
+      --hairline-subtle: 1px solid rgba(10, 10, 10, 0.15);
+      --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Berkeley Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+      
+      --header-h: 52px;
+      --sidebar-w: 320px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      border-radius: 0px !important; /* REGRA CAPITAL: ZERO BORDAS ARREDONDADAS */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent-swiss) !important;
+      outline-offset: 1px !important;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-museum);
+      color: var(--ink-primary);
+    }
+
+    body {
+      background-color: var(--bg-museum);
+      color: var(--ink-primary);
+      font-family: var(--font-display);
+      font-size: 14.5px;
+      line-height: 1.65;
+      letter-spacing: -0.01em;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    ::selection {
+      background: var(--accent-swiss);
+      color: #FFFFFF;
+    }
+
+    /* Tipografia e Numerais Tabulares */
+    .mono {
+      font-family: var(--font-mono);
+      font-feature-settings: "tnum" 1, "zero" 1;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+
+    .swiss-red { color: var(--accent-swiss); }
+    .crypto-blue { color: var(--accent-crypto); }
+    .text-muted { color: var(--ink-muted); }
+    .uppercase { text-transform: uppercase; }
+
+    /* Hachuras Suíças 45 Graus */
+    .hatch-45 {
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(10, 10, 10, 0.05),
+        rgba(10, 10, 10, 0.05) 1px,
+        transparent 1px,
+        transparent 5px
+      );
+    }
+
+    .hatch-red-45 {
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(217, 43, 43, 0.12),
+        rgba(217, 43, 43, 0.12) 1px,
+        transparent 1px,
+        transparent 5px
+      );
+    }
+
+    /* Miras de Registro Tipográfico (+) */
+    .reg-mark {
+      position: relative;
+    }
+    .reg-mark::before, .reg-mark::after {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent-swiss);
+      line-height: 1;
+      width: 14px;
+      height: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .reg-mark.top-left::before { content: "+"; top: -1px; left: -1px; transform: translate(-50%, -50%); }
+    .reg-mark.top-right::after { content: "+"; top: -1px; right: -1px; transform: translate(50%, -50%); }
+    .reg-mark.bottom-left::before { content: "+"; bottom: -1px; left: -1px; transform: translate(-50%, 50%); }
+    .reg-mark.bottom-right::after { content: "+"; bottom: -1px; right: -1px; transform: translate(50%, 50%); }
+
+    
+    
+    /* ==========================================================================
+       TABS DE ALTERNÂNCIA DE DOCUMENTOS & CABEÇALHO SUPERIOR MONUMENTAL
+       ALINHADO VERTICALMENTE COM O SIDEBAR (WIDTH: VAR(--SIDEBAR-W))
+       ========================================================================== */
+    .doc-topbar {
+      position: sticky;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: var(--header-h);
+      background-color: var(--bg-museum);
+      border-bottom: var(--hairline);
+      z-index: 1000;
+      display: flex;
+      align-items: stretch;
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    .topbar-cell {
+      display: flex;
+      align-items: center;
+    }
+
+    /* Caixa da logo com largura idêntica ao sidebar (320px) para alinhamento vertical absoluto */
+    .topbar-brand {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      max-width: var(--sidebar-w);
+      height: 100%;
+      box-sizing: border-box;
+      border-right: var(--hairline);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      background: var(--bg-museum);
+    }
+
+    .topbar-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border: 1px solid var(--accent-swiss);
+      background: var(--accent-swiss);
+      color: #FFF;
+      letter-spacing: 0.05em;
+    }
+
+    /* Tabs de Alternância de Documentos - Sem borda esquerda duplicada e sem margem */
+    .topbar-doc-tabs {
+      display: flex;
+      align-items: stretch;
+      margin: 0;
+      padding: 0;
+      border-left: none; /* ELIMINA LINHA DIVISÓRIA DUPLICADA */
+    }
+
+    .topbar-doc-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 20px;
+      background: transparent;
+      border: none;
+      border-right: var(--hairline);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--ink-muted);
+      cursor: pointer;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: all 0.12s ease;
+      white-space: nowrap;
+    }
+
+    .topbar-doc-tab:hover {
+      background: var(--bg-plinth);
+      color: var(--ink-primary);
+    }
+
+    .topbar-doc-tab.active {
+      background: #FFFFFF;
+      color: var(--ink-primary);
+      box-shadow: inset 0 -2px 0 var(--accent-swiss);
+    }
+
+    /* Espaçador neutro que preenche o vão central até as ações da direita */
+    .topbar-status-spacer {
+      flex: 1;
+      height: 100%;
+      border-right: var(--hairline);
+      background: transparent;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: stretch;
+    }
+
+    .topbar-btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      background: transparent;
+      border: none;
+      border-right: var(--hairline);
+      padding: 0 16px;
+      cursor: pointer;
+      color: var(--ink-primary);
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.12s ease;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .topbar-btn:hover {
+      background: var(--bg-plinth);
+      color: var(--accent-swiss);
+    }
+
+    .topbar-btn:last-child {
+      border-right: none;
+    }
+
+    @media (max-width: 960px) {
+      .topbar-brand {
+        width: auto;
+        min-width: 0;
+        max-width: none;
+        padding: 0 12px;
+      }
+      .topbar-status-spacer {
+        display: none;
+      }
+      .topbar-doc-tab {
+        padding: 0 10px;
+        font-size: 10px;
+      }
+      .topbar-btn {
+        padding: 0 10px;
+        font-size: 10px;
+      }
+    }
+
+
+    /* ==========================================================================
+       3. ESTRUTURA GERAL (LAYOUT DE 2 COLUNAS: ÍNDICE CURATORIAL + ARTIGO)
+       ========================================================================== */
+    .doc-container {
+      display: flex;
+      min-height: calc(100vh - var(--header-h));
+      position: relative;
+    }
+
+    /* Barra Lateral Esquerda: Índice Curatorial Kunsthalle */
+    .doc-sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      border-right: var(--hairline);
+      background: var(--bg-museum);
+      position: sticky;
+      top: var(--header-h);
+      height: calc(100vh - var(--header-h));
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .sidebar-header {
+      padding: 16px 18px;
+      border-bottom: var(--hairline);
+      background: var(--bg-plinth);
+    }
+
+    .sidebar-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--ink-primary);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sidebar-search {
+      margin-top: 10px;
+      position: relative;
+    }
+
+    .sidebar-input {
+      width: 100%;
+      border: 1px solid var(--ink-primary);
+      background: #FFFFFF;
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-primary);
+      outline: none;
+    }
+
+    .sidebar-input:focus {
+      border-color: var(--accent-swiss);
+    }
+
+    .sidebar-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .nav-item {
+      border-bottom: var(--hairline-subtle);
+    }
+
+    .nav-link {
+      display: block;
+      padding: 10px 18px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.4;
+      color: var(--ink-muted);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: all 0.12s ease;
+    }
+
+    .nav-link:hover {
+      background: var(--bg-plinth);
+      color: var(--ink-primary);
+      border-left-color: var(--ink-primary);
+    }
+
+    .nav-link.active {
+      background: #FFFFFF;
+      color: var(--accent-swiss);
+      font-weight: 700;
+      border-left-color: var(--accent-swiss);
+    }
+
+    .nav-code {
+      display: inline-block;
+      font-size: 10px;
+      color: var(--accent-swiss);
+      margin-right: 6px;
+      font-weight: 700;
+    }
+
+    .sidebar-footer {
+      padding: 14px 18px;
+      border-top: var(--hairline);
+      background: var(--bg-plinth);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      line-height: 1.5;
+      color: var(--ink-muted);
+    }
+
+    /* Área Principal de Leitura */
+    .doc-main {
+      flex: 1;
+      padding: 48px 64px 120px;
+      max-width: 1120px;
+      margin: 0 auto;
+      background: var(--bg-museum);
+    }
+
+    /* ==========================================================================
+       4. PLINTO MONUMENTAL DA FICHA CATALOGRÁFICA (INTRODUÇÃO)
+       ========================================================================== */
+    .catalog-monumental-card {
+      border: var(--hairline);
+      background: var(--bg-card);
+      padding: 42px;
+      margin-bottom: 56px;
+      position: relative;
+    }
+
+    .catalog-supertitle {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--accent-swiss);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .catalog-title {
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 18px;
+      color: var(--ink-primary);
+    }
+
+    .catalog-subline {
+      font-size: 17px;
+      line-height: 1.55;
+      color: var(--ink-muted);
+      margin-bottom: 28px;
+      max-width: 900px;
+    }
+
+    /* Grade Curatorial de Metadados da Ficha */
+    .catalog-metadata-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1px;
+      background: var(--ink-primary);
+      border: var(--hairline);
+      margin: 28px 0;
+    }
+
+    .metadata-cell {
+      background: var(--bg-card);
+      padding: 14px 18px;
+    }
+
+    .metadata-label {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .metadata-value {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--ink-primary);
+    }
+
+    /* Callout de Resumo de 3 Segundos */
+    .summary-box-3sec {
+      border: 1px solid var(--ink-primary);
+      background: var(--bg-plinth);
+      padding: 24px;
+      margin: 28px 0;
+      position: relative;
+    }
+
+    .summary-box-header {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-swiss);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .summary-box-content {
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--ink-primary);
+    }
+
+    /* Faixa de Links Oficiais */
+    .official-links-ribbon {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: var(--hairline-subtle);
+    }
+
+    .official-link-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      background: var(--bg-plinth);
+      border: 1px solid var(--ink-primary);
+      padding: 8px 14px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.12s ease;
+    }
+
+    .official-link-pill:hover {
+      background: var(--ink-primary);
+      color: #FFFFFF;
+    }
+
+    /* ==========================================================================
+       5. PLACAS DE SEÇÃO CATALOGRÁFICA (SECTION PLATES)
+       ========================================================================== */
+    .doc-section {
+      margin-top: 72px;
+      padding-top: 36px;
+      border-top: var(--hairline);
+    }
+
+    .section-plate-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--ink-primary);
+      padding-bottom: 12px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .section-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--accent-swiss);
+      text-transform: uppercase;
+    }
+
+    h2.section-heading {
+      font-size: 27px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink-primary);
+      margin-top: 4px;
+    }
+
+    .section-acc-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-muted);
+      letter-spacing: 0.05em;
+    }
+
+    h3.subsection-heading {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--ink-primary);
+      margin: 36px 0 16px;
+      padding-left: 12px;
+      border-left: 3px solid var(--accent-swiss);
+    }
+
+    h4.tertiary-heading {
+      font-size: 15px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--ink-primary);
+      margin: 24px 0 12px;
+    }
+
+    p {
+      margin-bottom: 16px;
+      color: var(--ink-primary);
+    }
+
+    ul, ol {
+      margin: 0 0 20px 24px;
+      color: var(--ink-primary);
+    }
+
+    li {
+      margin-bottom: 8px;
+      line-height: 1.55;
+    }
+
+    /* Listas Customizadas Tipo Catálogo */
+    .catalog-list {
+      list-style: none;
+      margin: 20px 0;
+      padding: 0;
+      border: var(--hairline);
+      background: var(--bg-card);
+    }
+
+    .catalog-list-item {
+      padding: 14px 20px;
+      border-bottom: var(--hairline-subtle);
+      display: flex;
+      gap: 16px;
+    }
+
+    .catalog-list-item:last-child {
+      border-bottom: none;
+    }
+
+    .catalog-item-bullet {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-swiss);
+      min-width: 24px;
+    }
+
+    /* ==========================================================================
+       6. CONSOLES DE TERMINAL & BLOCOS DE CÓDIGO (DIETER RAMS BRAUN CHASSIS)
+       ========================================================================== */
+    .terminal-chassis {
+      border: var(--hairline);
+      background: var(--bg-terminal);
+      color: #EFECE6;
+      margin: 24px 0 28px;
+      position: relative;
+    }
+
+    .terminal-bezel {
+      background: #141414;
+      border-bottom: 1px solid #282828;
+      padding: 9px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #9E9D98;
+    }
+
+    .terminal-bezel-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .terminal-indicator {
+      width: 8px;
+      height: 8px;
+      border: 1px solid #FFF;
+      background: var(--accent-swiss);
+      display: inline-block;
+    }
+
+    .terminal-bezel-tag {
+      font-weight: 700;
+      color: #FFF;
+      letter-spacing: 0.05em;
+    }
+
+    .terminal-lang-badge {
+      font-size: 9.5px;
+      padding: 1px 6px;
+      border: 1px solid #444;
+      background: #1F1F1F;
+      color: #AAA;
+      text-transform: uppercase;
+    }
+
+    .terminal-copy-btn {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      background: #242424;
+      color: #FFF;
+      border: 1px solid #444;
+      padding: 4px 10px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.12s ease;
+    }
+
+    .terminal-copy-btn:hover {
+      background: var(--accent-swiss);
+      border-color: var(--accent-swiss);
+    }
+
+    pre.code-block {
+      margin: 0;
+      padding: 18px 20px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.6;
+      tab-size: 4;
+      color: #E5E7EB;
+      white-space: pre;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+
+    /* Código em linha */
+    p code, li code, td code {
+      background: var(--bg-plinth);
+      color: var(--ink-primary);
+      border: 1px solid rgba(10, 10, 10, 0.2);
+      padding: 2px 5px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Tokens de Realce Sintático Limpos */
+    .tok-kw { color: #F87171; font-weight: 700; }        /* Palavras-chave / def / import */
+    .tok-fn { color: #60A5FA; }                         /* Funções / métodos */
+    .tok-str { color: #FCD34D; }                        /* Strings / literais */
+    .tok-cm { color: #78716C; font-style: italic; }     /* Comentários */
+    .tok-num { color: #A78BFA; }                        /* Números */
+    .tok-cls { color: #34D399; font-weight: 700; }      /* Classes / tipos */
+
+    /* ==========================================================================
+       7. TABELAS EDITORIAIS SUÍÇAS (.SWISS-TABLE)
+       ========================================================================== */
+    .table-responsive-frame, .table-container {
+      border: var(--hairline);
+      background: #FFFFFF;
+      overflow-x: auto;
+      margin: 24px 0 28px;
+    }
+
+    .swiss-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .swiss-table th {
+      background: var(--bg-plinth);
+      border-bottom: var(--hairline);
+      border-right: var(--hairline-subtle);
+      padding: 12px 16px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      color: var(--ink-primary);
+    }
+
+    .swiss-table td {
+      border-bottom: var(--hairline-subtle);
+      border-right: var(--hairline-subtle);
+      padding: 13px 16px;
+      line-height: 1.45;
+      color: var(--ink-primary);
+    }
+
+    .swiss-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .swiss-table th:last-child, .swiss-table td:last-child {
+      border-right: none;
+    }
+
+    .swiss-table tr:hover td {
+      background: rgba(10, 10, 10, 0.02);
+    }
+
+    .td-highlight {
+      background: rgba(217, 43, 43, 0.06);
+      font-weight: 700;
+      color: var(--accent-swiss);
+    }
+
+    .td-center {
+      text-align: center;
+    }
+
+    /* ==========================================================================
+       8. PLACAS DE ADVERTÊNCIA, NOTA & DECLARAÇÃO (LABORATORY PLATES)
+       ========================================================================== */
+    .lab-plate {
+      border: var(--hairline);
+      background: var(--bg-card);
+      padding: 20px 24px;
+      margin: 24px 0;
+      position: relative;
+    }
+
+    .lab-plate-note {
+      border-left: 4px solid var(--ink-primary);
+      background: var(--bg-plinth);
+    }
+
+    .lab-plate-warning {
+      border-left: 4px solid var(--accent-swiss);
+      background: #FFF;
+    }
+
+    .lab-plate-crypto {
+      border-left: 4px solid var(--accent-crypto);
+      background: #FFF;
+    }
+
+    .lab-plate-header {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .lab-plate-tag {
+      padding: 2px 6px;
+      background: var(--ink-primary);
+      color: #FFF;
+      font-size: 9px;
+    }
+
+    .lab-plate-tag.red {
+      background: var(--accent-swiss);
+    }
+
+    .lab-plate-tag.blue {
+      background: var(--accent-crypto);
+    }
+
+    .lab-plate-content {
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+
+    /* Bloco reservado para texto jurídico */
+    .legal-reserved-block {
+      border: 1px dashed var(--ink-primary);
+      background: var(--bg-plinth);
+      padding: 20px;
+      margin: 20px 0;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.6;
+      color: var(--ink-primary);
+    }
+
+    /* ==========================================================================
+       9. DIAGRAMAS E INSTRUMENTOS GRÁFICOS PROPRIETÁRIOS
+       ========================================================================== */
+    .diagram-instrument-frame {
+      border: var(--hairline);
+      background: #FFFFFF;
+      padding: 28px;
+      margin: 28px 0;
+      position: relative;
+    }
+
+    .diagram-bezel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: var(--hairline);
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+
+    .diagram-title {
+      font-weight: 700;
+      color: var(--ink-primary);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* Régua Comparativa Dieter Rams 1:1 */
+    .comparative-ruler-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    .ruler-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .ruler-label-bar {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .ruler-track {
+      height: 28px;
+      background: var(--bg-plinth);
+      border: 1px solid var(--ink-primary);
+      position: relative;
+      display: flex;
+      align-items: stretch;
+    }
+
+    .ruler-fill {
+      background: var(--ink-primary);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .ruler-fill.swiss {
+      background: var(--accent-swiss);
+    }
+
+    .ruler-fill.hatch {
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(10, 10, 10, 0.12),
+        rgba(10, 10, 10, 0.12) 2px,
+        transparent 2px,
+        transparent 6px
+      );
+      color: var(--ink-muted);
+    }
+
+    .ruler-val {
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--ink-muted);
+      white-space: nowrap;
+      z-index: 1;
+    }
+
+    .ruler-ticks {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background-image: repeating-linear-gradient(
+        90deg,
+        rgba(10, 10, 10, 0.2) 0px,
+        rgba(10, 10, 10, 0.2) 1px,
+        transparent 1px,
+        transparent 10%
+      );
+    }
+
+    /* Diagrama ASCII / Esquemático Formatado */
+    .ascii-schematic-box {
+      border: 1px solid var(--ink-primary);
+      background: #FFFFFF;
+      padding: 20px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.45;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--ink-primary);
+    }
+
+    /* ==========================================================================
+       10. ELEMENTOS INTERATIVOS DO STUDIO E DIETER RAMS SWITCHES
+       ========================================================================== */
+    .hall-spec-card {
+      border: var(--hairline);
+      background: #FFFFFF;
+      margin: 20px 0;
+      padding: 24px;
+    }
+
+    .hall-spec-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: var(--hairline-subtle);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .hall-num {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent-swiss);
+    }
+
+    .hall-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .hall-steps {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .hall-step-item {
+      display: flex;
+      gap: 14px;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+
+    .hall-step-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--bg-plinth);
+      border: 1px solid var(--ink-primary);
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Botão Voltar ao Topo */
+    .back-to-top-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 28px;
+      background: var(--ink-primary);
+      color: #FFFFFF;
+      border: 1px solid var(--ink-primary);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 10px 16px;
+      cursor: pointer;
+      z-index: 999;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      box-shadow: 4px 4px 0px rgba(10, 10, 10, 0.2);
+    }
+
+    .back-to-top-btn:hover {
+      background: var(--accent-swiss);
+      border-color: var(--accent-swiss);
+    }
+
+    /* Notificação Toast Flutuante */
+    .toast-indicator {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink-primary);
+      color: #FFFFFF;
+      border: 1px solid var(--accent-swiss);
+      padding: 8px 18px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      z-index: 2000;
+      display: none;
+    }
+
+    /* ==========================================================================
+       11. RESPONSIVIDADE E MEDIA QUERIES
+       ========================================================================== */
+    @media (max-width: 960px) {
+      .doc-sidebar {
+        display: none;
+      }
+      .doc-main {
+        padding: 32px 20px 80px;
+      }
+      .catalog-monumental-card {
+        padding: 24px;
+      }
+      .catalog-title {
+        font-size: 28px;
+      }
+      .topbar-status {
+        display: none;
+      }
+    }
+  
+  </style>
+
+</head>
+<body>
+
+  <header class="doc-topbar">
+    <div class="topbar-brand">
+      <span>BAGUET // SYSTEM SPEC</span>
+      <span class="topbar-badge">[v1.0.0]</span>
+    </div>
+
+    <!-- TABS DE NAVEGAÇÃO ENTRE DOCUMENTOS (ALINHADAS AO SIDEBAR) -->
+    <nav class="topbar-doc-tabs" aria-label="Navegação entre documentos">
+      <a href="guide.html" class="topbar-doc-tab " id="tab-guide">
+        <span class="mono swiss-red">[01]</span>
+        <span>GUIA TÉCNICO</span>
+      </a>
+      <a href="terms.html" class="topbar-doc-tab " id="tab-terms">
+        <span class="mono swiss-red">[02]</span>
+        <span>TERMOS &amp; LICENÇA</span>
+      </a>
+      <a href="privacy.html" class="topbar-doc-tab " id="tab-privacy">
+        <span class="mono swiss-red">[03]</span>
+        <span>PRIVACIDADE</span>
+      </a>
+      <a href="litepaper.html" class="topbar-doc-tab active" id="tab-litepaper">
+        <span class="mono swiss-red">[04]</span>
+        <span>LITEPAPER</span>
+      </a>
+    </nav>
+
+    <!-- ESPAÇADOR NEUTRO (SEM TEXTO DE STATUS CONFORME ESPECIFICAÇÃO) -->
+    <div class="topbar-status-spacer"></div>
+
+    <div class="topbar-actions">
+      <a href="https://github.com/soilore/baguet" target="_blank" rel="noopener" class="topbar-btn">
+        [REPO GITHUB]
+      </a>
+      <a href="https://baguet.soilore.com" target="_blank" rel="noopener" class="topbar-btn">
+        [PORTAL WEB]
+      </a>
+      <button class="topbar-btn" onclick="window.print()">
+        [DOWNLOAD]
+      </button>
+    </div>
+  </header>
+
+  <div class="doc-container">
+    <aside class="doc-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">
+          <span>CATALOG INDEX</span>
+          <span class="mono swiss-red">[11 SEÇÕES]</span>
+        </div>
+        <div class="sidebar-search">
+          <input type="text" id="sidebar-filter-input" class="sidebar-input mono" placeholder="FILTRAR LITEPAPER..." oninput="filterSidebarIndex()">
+        </div>
+      </div>
+
+      <ul class="sidebar-nav" id="sidebar-nav-list">
+
+        
+        <li class="nav-item">
+          <a href="#introducao" class="nav-link active">
+            <span class="nav-code">[00]</span> Visão Geral &amp; Resumo
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#resumo-executivo" class="nav-link">
+            <span class="nav-code">[01]</span> Resumo Executivo
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#o-problema" class="nav-link">
+            <span class="nav-code">[02]</span> O Falso Dilema na IA
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#memoria-algebrica" class="nav-link">
+            <span class="nav-code">[03]</span> Memória Algébrica
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#nove-containers" class="nav-link">
+            <span class="nav-code">[04]</span> Os 9 Containers (.bgt*)
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#pilares-dominio" class="nav-link">
+            <span class="nav-code">[05]</span> Pilares por Domínio
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#seguranca-zerotrust" class="nav-link">
+            <span class="nav-code">[06]</span> Segurança &amp; Zero-Trust
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#benchmarks-consolidados" class="nav-link">
+            <span class="nav-code">[07]</span> Benchmarks Consolidados
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#vinte-quatro-pilares" class="nav-link">
+            <span class="nav-code">[08]</span> 24 Pilares Arquiteturais
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#escopo-operacional" class="nav-link">
+            <span class="nav-code">[09]</span> Escopo &amp; Entropia
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#distribuicao-bgtl1" class="nav-link">
+            <span class="nav-code">[10]</span> Distribuição &amp; BGTL1
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#publicacao-defensiva" class="nav-link">
+            <span class="nav-code">[11]</span> Publicação Defensiva
+          </a>
+        </li>
+  
+      
+      </ul>
+
+      <div class="sidebar-footer">
+        <div><strong>INTEGRIDADE:</strong> SHA-256 BIT-EXACT</div>
+        <div><strong>ARQUITETURA:</strong> AIR-GAPPED 100%</div>
+        <div><strong>ESTADO DA TÉCNICA:</strong> WIPO / PRIOR ART</div>
+      </div>
+    </aside>
+
+    <main class="doc-main">
+
+      <!-- FICHA CATALOGRÁFICA MONUMENTAL (ABERTURA) -->
+      <article class="catalog-monumental-card reg-mark top-left bottom-right" id="introducao">
+        <div class="catalog-supertitle">
+          <span>BAGUET ARCHITECTURAL SPECIFICATION</span>
+          <span>//</span>
+          <span>SPEC-SYS-LITEPAPER</span>
+          <span>//</span>
+          <span>EDITION 2026.10</span>
+        </div>
+
+        <h1 class="catalog-title">
+          Baguet v1.0.0 — Litepaper Institucional
+        </h1>
+
+        <p class="catalog-subline">
+          Transformando Compressão Sem Perdas em Computação Direta para Inteligência Artificial - IA, Multimídia e Infraestrutura de Dados de Alta Performance.
+        </p>
+
+        <!-- GRADE DE METADADOS CURATORIAIS -->
+        <div class="catalog-metadata-grid">
+          <div class="metadata-cell">
+            <div class="metadata-label">TÍTULO DA INVENÇÃO</div>
+            <div class="metadata-value">Compressão Lossless por Divergência Autoregressiva Determinística &amp; Tensores Bijetivos</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">CLASSIFICAÇÃO IPC</div>
+            <div class="metadata-value">H03M 7/30; G06F 16/174; G06N 3/04; G06N 3/08; H04N 19/91</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">MODELO DE LICENÇA</div>
+            <div class="metadata-value">BUSL-1.1 AND MIT (Dual-Layer)</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">NÚCLEO NATIVO</div>
+            <div class="metadata-value">Rust SIMD (AVX2/FMA + ARM64 NEON) + Python C-ABI</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">ESTADO DA TÉCNICA</div>
+            <div class="metadata-value">Publicação Defensiva Internacional (OMPI / WIPO)</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">CERTIFICAÇÃO</div>
+            <div class="metadata-value">OpenTimestamps (SHA-256)</div>
+          </div>
+        </div>
+
+        <!-- RESUMO DE 3 SEGUNDOS -->
+        <div class="summary-box-3sec">
+          <div class="summary-box-header">
+            <span class="mono">[EXECUTIVE SUMMARY]</span>
+            <span>RESUMO RÁPIDO</span>
+          </div>
+          <div class="summary-box-content">
+            O <strong>BAGUET v1.0.0</strong> supera o falso dilema entre perda irreversível de precisão (quantização destrutiva) e compressores tradicionais ineficientes ao introduzir o primeiro <strong>Motor de Memória Algébrica Bijetiva e Codec 100% Lossless</strong> com suporte nativo a <strong>Computação Direta sobre Dados Comprimidos (<em>Compute-on-Compressed-Data</em>)</strong>. Operando de forma 100% offline com aceleração SIMD nativa em Rust, comprime bancos vetoriais de embeddings (RAG) em <strong>4,00x</strong>, KV-Cache em <strong>2,71x</strong>, checkpoints em <strong>10,85x</strong> e tabelas analíticas em até <strong>55,89x</strong>, com reconstrução matemática bit a bit idêntica (bit-exact) garantida por verificação pericial SHA-256.
+          </div>
+        </div>
+
+        <!-- FAIXA DE LINKS OFICIAIS -->
+        <div class="official-links-ribbon">
+          <a href="guide.html" class="official-link-pill">
+            <span class="mono swiss-red">[01]</span> GUIA TÉCNICO COMPLETO &rarr;
+          </a>
+          <a href="terms.html" class="official-link-pill">
+            <span class="mono swiss-red">[02]</span> TERMOS DE USO &amp; LICENÇA &rarr;
+          </a>
+          <a href="privacy.html" class="official-link-pill">
+            <span class="mono swiss-red">[03]</span> POLÍTICA DE PRIVACIDADE &rarr;
+          </a>
+          <a href="https://github.com/soilore/baguet" target="_blank" rel="noopener" class="official-link-pill">
+            <span class="mono">[GIT]</span> REPOSITÓRIO GITHUB &rarr;
+          </a>
+          <a href="https://baguet.soilore.com" target="_blank" rel="noopener" class="official-link-pill">
+            <span class="mono">[WEB]</span> PORTAL OFICIAL &rarr;
+          </a>
+        </div>
+      </article>
+
+      <!-- SEÇÃO 01: RESUMO EXECUTIVO -->
+      <section class="doc-section" id="resumo-executivo">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[ARQUITETURA &amp; INDÚSTRIA]</div>
+            <h2 class="section-heading">01. Resumo Executivo &amp; O Gargalo de Memória (Memory Wall)</h2>
+          </div>
+          <div class="section-acc-num">SEC.LITE-01</div>
+        </div>
+
+        <p>
+          A indústria global de computação enfrenta um gargalo estrutural crítico conhecido como <strong>Memory Wall</strong>: a capacidade de cálculo de GPUs e CPUs modernas cresce a taxas substancialmente superiores à largura de banda dos barramentos de memória (<code>VRAM</code>/<code>RAM</code>), barramentos <code>PCIe</code> e unidades de armazenamento flash <code>NVMe</code>.
+        </p>
+
+        <p>
+          Simultaneamente, os utilitários de compressão empregados hoje em infraestrutura de dados (<code>zstd</code>, <code>gzip</code>, <code>lz4</code>, <code>xz</code>) foram formulados sob um paradigma da década de 1970: tratam qualquer arquivo — seja um modelo de linguagem de 70 bilhões de parâmetros, um índice vetorial de busca semântica ou um volume de telemetria científica — como uma sequência linear, opaca e unidimensional de bytes. Isso acarreta duas limitações intransponíveis:
+        </p>
+
+        <ol>
+          <li><strong>Ineficiência Crônica em Dados Científicos e de IA:</strong> Compressores genéricos baseados em janelas deslizantes (LZ77/LZ4) registram ganhos marginais em tensores de ponto flutuante (<code>FP32</code>, <code>FP16</code>, <code>BF16</code>), com fatores de redução típicos de apenas <code>1,08x</code> a <code>1,12x</code>.</li>
+          <li><strong>Obrigatoriedade de Descompressão Total:</strong> Para consultar um único vetor ou computar uma multiplicação de matrizes, o sistema deve descompactar blocos inteiros para a memória principal, anulando qualquer benefício de conservação de largura de banda durante o ciclo de execução.</li>
+        </ol>
+
+        <p>
+          O <strong>Baguet v1.0.0</strong> rompe esse paradigma ao instituir a tecnologia de <strong>Memória Algébrica Bijetiva</strong>, permitindo que sistemas executem consultas, buscas Top-K e projeções matriciais <strong>diretamente sobre os blocos compactados</strong>, sem descompressão intermediária.
+        </p>
+      </section>
+
+      <!-- SEÇÃO 02: O FALSO DILEMA NA IA -->
+      <section class="doc-section" id="o-problema">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[O PROBLEMA ESTRUTURAL]</div>
+            <h2 class="section-heading">02. O Falso Dilema entre Eficiência de Memória e Fidelidade Matemática</h2>
+          </div>
+          <div class="section-acc-num">SEC.LITE-02</div>
+        </div>
+
+        <p>
+          Atualmente, organizações que operam inteligência artificial em larga escala, acervos de computação visual ou lagos de dados analíticos encontram-se encurraladas em um dilema insatisfatório:
+        </p>
+
+        <h3 class="subsection-heading">2.1 O Custo Oculto da Quantização Destrutiva (Lossy Quantization)</h3>
+        <p>
+          Para viabilizar o encaixe de modelos na memória de GPUs ou restringir custos operacionais de bancos vetoriais, a indústria adotou a quantização com perda (<code>INT8</code>, <code>INT4</code>, <code>Product Quantization</code>). Embora comprima o tamanho em bytes, a quantização degrada permanentemente a precisão dos tensores:
+        </p>
+        <ul>
+          <li><strong>Erosão de Precisão (Recall):</strong> Queda sensível de acurácia em buscas semânticas de alta responsabilidade (diagnóstico clínico, auditoria jurídica e inteligência geoespacial);</li>
+          <li><strong>Alucinações e Desvios de Raciocínio:</strong> Perturbações sutis em matrizes de pesos de LLMs que induzem erros cognitivos difíceis de rastrear;</li>
+          <li><strong>Inviabilidade Regulatória:</strong> Impossibilidade de auditar ou reproduzir bit a bit os pesos e saídas originais do modelo perante agências de conformidade técnica.</li>
+        </ul>
+
+        <h3 class="subsection-heading">2.2 A Cegueira Estrutural dos Compressores Tradicionais</h3>
+        <p>
+          Por outro lado, quando a conservação matemática absoluta (<code>100% Lossless</code>) é mandatória, compressores convencionais falham por ignorar a geometria dos dados:
+        </p>
+        <ul>
+          <li>Nos tensores numéricos, bits de sinal, expoente e mantissa encontram-se entrelaçados, apresentando alta entropia aparente a algoritmos de correspondência de strings;</li>
+          <li>Em formatos multimídia pré-compactados (<code>PNG</code>, <code>JPEG</code>, <code>MP4</code>), ferramentas comuns são incapazes de explorar invariantes algébricas residuais;</li>
+          <li>O dado compactado torna-se <em>computacionalmente inerte</em>: nenhuma computação é possível sem o custo integral de reexpansão em memória.</li>
+        </ul>
+      </section>
+
+      <!-- SEÇÃO 03: MEMÓRIA ALGÉBRICA BIJETIVA -->
+      <section class="doc-section" id="memoria-algebrica">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[A MUDANÇA DE PARADIGMA]</div>
+            <h2 class="section-heading">03. A Mudança de Paradigma: Memória Algébrica Bijetiva</h2>
+          </div>
+          <div class="section-acc-num">SEC.LITE-03</div>
+        </div>
+
+        <p>
+          O protocolo <strong>BAGUET v1.0.0</strong> substitui a compressão cega de fluxos lineares de bytes por uma <strong>Decomposição Algébrica Ortogonal em Planos de Bits</strong> com propriedades estritamente reversíveis:
+        </p>
+
+        <!-- DIAGRAMA ARQUITETURAL EM TERMINAL CHASSIS -->
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">FLUXO ARQUITETURAL // PIPELINE DETERMINÍSTICO BIJETIVO</span>
+              <span class="terminal-lang-badge">algebraic core</span>
+            </div>
+          </div>
+          <pre class="code-block"><code class="language-text">[DADOS BRUTOS: Tensores IA, Vetores RAG, Multimídia 1D/2D/3D, Tabelas Colunares, Texto]
+                                    │
+                                    ▼
+       ┌─────────────────────────────────────────────────────────┐
+       │      ROTEADOR ESTRUTURAL DETERMINÍSTICO MULTI-MODO      │
+       └─────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+       ┌─────────────────────────────────────────────────────────┐
+       │   DECOMPOSIÇÃO EM PLANOS ORTOGONAIS BIJETIVOS (BGT-AE)  │
+       │   - Separação de Planos de Magnitude (Esboços RAG Top-K)│
+       │   - Isolamento de Mantissas e Resíduos de Alta Entropia │
+       └─────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+       ┌─────────────────────────────────────────────────────────┐
+       │   CODIFICAÇÃO POR ENTROPIA SIMD (AVX2/FMA &amp; ARM64 NEON) │
+       │   + Transposição e Hash de Integridade Pericial SHA-256 │
+       └─────────────────────────────────────────────────────────┘
+                                    │
+                  ┌─────────────────┴─────────────────┐
+                  ▼                                   ▼
+   ┌─────────────────────────────┐     ┌─────────────────────────────┐
+   │ CAMINHO 1: RESTAURAÇÃO      │     │ CAMINHO 2: COMPUTAÇÃO       │
+   │ 100% BIT-EXACT LOSSLESS     │     │ DIRETA SOBRE DADOS .BGT*    │
+   │ - Saída Idêntica Bit a Bit  │     │ - Busca Top-K Sub-Linear    │
+   │ - Hash SHA-256 Verificado   │     │ - Atenção Online Flash-SDPA │
+   │ - Descompressão Sempre MIT  │     │ - Leitura Zero-Copy mmap    │
+   └─────────────────────────────┘     └─────────────────────────────┘</code></pre>
+        </div>
+
+        <p>
+          <strong>1. Bijeção Matemática Rígida:</strong> Todas as operações de rotação de planos, predição causal e ordenação de ranks no BAGUET são bijetivas no domínio discreto inteiro. Não existem aproximações ou divergências resultantes de arredondamentos de ponto flutuante específicos de fabricantes de hardware.
+        </p>
+
+        <p>
+          <strong>2. Separação de Planos de Informação:</strong> Ao isolar planos de bits mais significativos (MSBs) dos planos de ruído/mantissa fina (LSBs), o motor permite realizar computação aproximada garantida e poda de ramos (<em>branch-and-bound</em>) analisando unicamente frações compactadas dos dados.
+        </p>
+      </section>
+
+      <!-- SEÇÃO 04: OS 9 CONTAINERS ESPECIALIZADOS -->
+      <section class="doc-section" id="nove-containers">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[ECOSSISTEMA DE FORMATOS]</div>
+            <h2 class="section-heading">04. Ecossistema Unificado: Os 9 Containers Especializados (.bgt*)</h2>
+          </div>
+          <div class="section-acc-num">SEC.LITE-04</div>
+        </div>
+
+        <p>
+          O BAGUET v1.0.0 dispõe de 9 containers interoperáveis, projetados sob medida para as diferentes classes de cargas de trabalho industriais:
+        </p>
+
+        <div class="table-container">
+          <table class="swiss-table">
+            <thead>
+              <tr>
+                <th style="width: 90px;">Extensão</th>
+                <th style="width: 220px;">Designação do Container</th>
+                <th>Mecanismo Algébrico &amp; Propósito Industrial</th>
+                <th style="width: 130px;" class="td-center">Zero-Copy mmap</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="td-highlight">.bgt</td>
+                <td><strong>Universal Container</strong></td>
+                <td>Container atômico de propósito geral para tensores, diretórios e arquivos com verificação SHA-256 nativa.</td>
+                <td class="td-center">Sim</td>
+              </tr>
+              <tr>
+                <td class="td-highlight">.bgtu</td>
+                <td><strong>Universal Transcoder (BGTU6)</strong></td>
+                <td>Transcodificador reversível para PNG, JPEG, WebP, MP4, PDF e ZIP, restaurando bit a bit o container original.</td>
+                <td class="td-center">Não</td>
+              </tr>
+              <tr>
+                <td class="td-highlight">.bgtt</td>
+                <td><strong>SafeTensors Catalog (BGTT6)</strong></td>
+                <td>Catálogo indexado de modelos SafeTensors com carregamento seletivo por camada (~1,2 ms) sem pico de RAM.</td>
+                <td class="td-center">Sim</td>
+              </tr>
+              <tr>
+                <td class="td-highlight">.bgtd</td>
+                <td><strong>Differential LoRA (BGTD6)</strong></td>
+                <td>Checkpoints diferenciais de treinamento e adaptadores LoRA, reduzindo versões em mais de 10x sem perdas.</td>
+                <td class="td-center">Sim</td>
+              </tr>
+              <tr>
+                <td class="td-highlight">.bgtp</td>
+                <td><strong>Progressive Tensor (BGTP6)</strong></td>
+                <td>Tensor dual-tier com camada base BF16 para inferência imediata com metade da memória e refinamento FP32 exato.</td>
+                <td class="td-center">Sim</td>
+              </tr>
+              <tr>
+                <td class="td-highlight">.bgts</td>
+                <td><strong>Indexed Slab Pool</strong></td>
+                <td>Armazenamento em slab único de alta densidade para objetos e logs com acesso aleatório O(1) em ~0,18 ms.</td>
+                <td class="td-center">Sim</td>
+              </tr>
+              <tr>
+                <td class="td-highlight">.bgtv</td>
+                <td><strong>Streaming Continuous Frame</strong></td>
+                <td>Streaming de blocos contínuos e independentes para logs e telemetria de rede com uso de RAM estritamente constante.</td>
+                <td class="td-center">Não</td>
+              </tr>
+              <tr>
+                <td class="td-highlight">.bgttile</td>
+                <td><strong>2D Spatial Tile Matrix</strong></td>
+                <td>Particionamento bidimensional em blocos independentes para imagens gigapixel, fatias médicas e sensoriamento.</td>
+                <td class="td-center">Sim</td>
+              </tr>
+              <tr>
+                <td class="td-highlight">.bgtpr</td>
+                <td><strong>Domain Prior Artifact</strong></td>
+                <td>Dicionário pré-treinado sobre a estrutura de dados de uma organização para maximizar taxa em payloads curtos.</td>
+                <td class="td-center">Não</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SEÇÃO 05: PILARES POR DOMÍNIO -->
+      <section class="doc-section" id="pilares-dominio">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[CAMPOS DE APLICAÇÃO]</div>
+            <h2 class="section-heading">05. Pilares Tecnológicos por Domínio de Aplicação</h2>
+          </div>
+          <div class="section-acc-num">SEC.LITE-05</div>
+        </div>
+
+        <h3 class="subsection-heading">5.1 Inteligência Artificial: RAG Sub-Linear, Flash-SDPA e Inferência Direta</h3>
+        <ul>
+          <li><strong>Busca Vetorial RAG Sub-Linear (100% Recall@K):</strong> Comprime bancos de embeddings FP32 em <strong>4,00x</strong> e emprega sketches ortogonais para podar <strong>mais de 70% dos blocos</strong> sem descomprimir, retornando exatamente o mesmo Top-K da busca exata.</li>
+          <li><strong>Atenção Direta Flash-SDPA &amp; KV-Cache Offloader:</strong> Compacta tensores de KV-Cache FP16 em <strong>2,71x</strong> e executa o kernel de atenção sobre os blocos compactados em RAM ou swap NVMe, triplicando a janela de contexto útil sem trocar de hardware.</li>
+          <li><strong>Projeção Linear Direta:</strong> Multiplicações matriciais ($Y = XW^T + b$) são calculadas diretamente a partir dos planos de bits comprimidos do modelo.</li>
+        </ul>
+
+        <h3 class="subsection-heading">5.2 Multimídia e Transcodificação Universal Reversível</h3>
+        <ul>
+          <li><strong>Kernels Multimídia Causais 1D/2D/3D:</strong> Preditores no domínio inteiro para áudio PCM16 (1D), matrizes de imagem de alta profundidade (2D) e volumes de tomografia ou vídeo (3D).</li>
+          <li><strong>Transcodificação Universal Bit-Exact (.bgtu):</strong> Reduz o espaço ocupado por arquivos PNG, JPEG, MP4, PDF e ZIP em 1,14x a 5,12x, com garantia matemática de reconstrução idêntica do hash original.</li>
+        </ul>
+
+        <h3 class="subsection-heading">5.3 Engenharia de Dados e Armazenamento Colunar</h3>
+        <ul>
+          <li><strong>Transposição Algébrica de Parquet e Tabelas:</strong> Extrai redundâncias numéricas e de correlação de colunas em Parquet, CSV e JSONL, obtendo taxas de <strong>5,78x a 55,89x</strong>.</li>
+          <li><strong>Slabs Indexados (.bgts):</strong> Elimina a degradação de performance por acúmulo de arquivos pequenos em sistemas de arquivos (inodes), garantindo leitura direta de registros em sub-milissegundo.</li>
+        </ul>
+      </section>
+
+      <!-- SEÇÃO 06: SEGURANÇA & ZERO-TRUST -->
+      <section class="doc-section" id="seguranca-zerotrust">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[SEGURANÇA &amp; CONFORMIDADE]</div>
+            <h2 class="section-heading">06. Segurança Zero-Trust, Criptografia BGT-AE e Governança Offline</h2>
+          </div>
+          <div class="section-acc-num">SEC.LITE-06</div>
+        </div>
+
+        <p>
+          O BAGUET foi concebido para atender às exigências de infraestruturas soberanas, bancárias, governamentais e de defesa:
+        </p>
+
+        <ol>
+          <li><strong>Operação 100% Offline e Air-Gapped:</strong> O motor, a interface CLI, os SDKs e o aplicativo Baguet Studio não contêm telemetria, chamadas de rede ou conexões a servidores externos.</li>
+          <li><strong>Criptografia Autenticada BGT-AE (AES-256-SIV + HKDF-SHA256):</strong> Protege artefatos com cifra imune a reutilização acidental de nonces (RFC 5297) e vinculação de metadados de auditoria via Associated Data (AAD).</li>
+          <li><strong>Defesa Ativa contra Decompression Bombs:</strong> Verificação rigorosa de cotas de expansão máxima antes de qualquer processamento, frustrando ataques de exaustão de memória.</li>
+          <li><strong>Licenciamento Criptográfico Local (BGTL1 via Ed25519):</strong> Ativação de cotas comerciais por assinaturas digitais assimétricas locais, sem dependência de chaves de nuvem ou checagens remotas.</li>
+        </ol>
+      </section>
+
+      <!-- SEÇÃO 07: BENCHMARKS CONSOLIDADOS -->
+      <section class="doc-section" id="benchmarks-consolidados">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[AUDITORIA EMPÍRICA]</div>
+            <h2 class="section-heading">07. Resumo Consolidado de Benchmarks Auditados (Baguet v1.0.0)</h2>
+          </div>
+          <div class="section-acc-num">SEC.LITE-07</div>
+        </div>
+
+        <div class="table-container">
+          <table class="swiss-table">
+            <thead>
+              <tr>
+                <th>Carga de Trabalho / Domínio</th>
+                <th>Formato Baguet</th>
+                <th class="td-center">Taxa Baguet v1.0.0</th>
+                <th class="td-center">Taxa zstd -19</th>
+                <th>Diferencial Arquitetural do Baguet</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Embeddings Vetoriais (RAG FP32)</strong></td>
+                <td class="td-highlight">.bgt (BGT-EMB1)</td>
+                <td class="td-center td-highlight">4,00x</td>
+                <td class="td-center">1,09x</td>
+                <td>Busca Top-K Sub-Linear (100% Recall@K, >70% blocos poupados)</td>
+              </tr>
+              <tr>
+                <td><strong>LLM KV-Cache (FP16)</strong></td>
+                <td class="td-highlight">.bgt (BGT-TNS1)</td>
+                <td class="td-center td-highlight">2,71x</td>
+                <td class="td-center">1,12x</td>
+                <td>Atenção Online Flash-SDPA direta sem reexpansão prévia</td>
+              </tr>
+              <tr>
+                <td><strong>Checkpoints Diferenciais de IA</strong></td>
+                <td class="td-highlight">.bgtd (BGTD6)</td>
+                <td class="td-center td-highlight">10,85x</td>
+                <td class="td-center">1,11x</td>
+                <td>Economia de >90% no armazenamento de versões de fine-tuning</td>
+              </tr>
+              <tr>
+                <td><strong>Modelos SafeTensors (FP32 / BF16)</strong></td>
+                <td class="td-highlight">.bgtt (BGTT6)</td>
+                <td class="td-center td-highlight">1,45x a 4,26x</td>
+                <td class="td-center">1,08x a 1,19x</td>
+                <td>Leitura seletiva por camada via Zero-Copy mmap (~1,2 ms)</td>
+              </tr>
+              <tr>
+                <td><strong>Tensores Progressivos Dual-Tier</strong></td>
+                <td class="td-highlight">.bgtp (BGTP6)</td>
+                <td class="td-center td-highlight">2,00x (Base BF16)</td>
+                <td class="td-center">1,08x</td>
+                <td>Hot-start com 50% de RAM + refinamento FP32 lossless sob demanda</td>
+              </tr>
+              <tr>
+                <td><strong>Dados Tabulares e Parquet</strong></td>
+                <td class="td-highlight">.bgt</td>
+                <td class="td-center td-highlight">5,78x a 55,89x</td>
+                <td class="td-center">3,00x a 29,01x</td>
+                <td>Redução adicional de até 92% sobre arquivos já colunares</td>
+              </tr>
+              <tr>
+                <td><strong>Textos, Código e Logs Estruturados</strong></td>
+                <td class="td-highlight">.bgt / .bgts</td>
+                <td class="td-center td-highlight">4,60x a 24,50x</td>
+                <td class="td-center">3,10x a 14,20x</td>
+                <td>Recuperação seletiva O(1) e curadoria epistêmica nativa</td>
+              </tr>
+              <tr>
+                <td><strong>Multimídia Universal (PNG, JPEG, MP4)</strong></td>
+                <td class="td-highlight">.bgtu (BGTU6)</td>
+                <td class="td-center td-highlight">1,14x a 5,12x</td>
+                <td class="td-center">1,00x a 1,05x</td>
+                <td>Restauração 100% bit-exact do arquivo multimídia original</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SEÇÃO 08: OS 24 PILARES ARQUITETURAIS -->
+      <section class="doc-section" id="vinte-quatro-pilares">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[MANIFESTO DE ENGENHARIA]</div>
+            <h2 class="section-heading">08. Os 24 Pilares Arquiteturais do Baguet v1.0.0</h2>
+          </div>
+          <div class="section-acc-num">SEC.LITE-08</div>
+        </div>
+
+        <div class="table-container">
+          <table class="swiss-table">
+            <thead>
+              <tr>
+                <th style="width: 50px;" class="td-center">#</th>
+                <th style="width: 280px;">Pilar Arquitetural</th>
+                <th>Benefício Direto em Infraestrutura &amp; Produção</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="td-center td-highlight">01</td><td><strong>Bijeção Algébrica 100% Lossless</strong></td><td>Zero perda de precisão matemática; reconstrução bit a bit garantida.</td></tr>
+              <tr><td class="td-center td-highlight">02</td><td><strong>Verificação SHA-256 Integrada</strong></td><td>Detecção imediata de qualquer corrupção física de disco ou RAM (Fail-Closed).</td></tr>
+              <tr><td class="td-center td-highlight">03</td><td><strong>Motor Híbrido Python + Rust Native</strong></td><td>Ergonomia do ecossistema científico com velocidade de código nativo compilado.</td></tr>
+              <tr><td class="td-center td-highlight">04</td><td><strong>Aceleração SIMD (AVX2/FMA &amp; NEON)</strong></td><td>Máxima vazão computacional em processadores Intel, AMD e Apple Silicon.</td></tr>
+              <tr><td class="td-center td-highlight">05</td><td><strong>Busca Vetorial RAG Sub-Linear</strong></td><td>Poda mais de 70% dos blocos vetoriais mantendo 100% de Recall@K.</td></tr>
+              <tr><td class="td-center td-highlight">06</td><td><strong>Online Flash-SDPA sobre KV-Cache</strong></td><td>Executa atenção multi-head em LLMs reduzindo uso de memória ativa em 63,1%.</td></tr>
+              <tr><td class="td-center td-highlight">07</td><td><strong>KV-Cache Multi-Block Offloader</strong></td><td>Triplica a janela de contexto de modelos sem estourar a VRAM das placas.</td></tr>
+              <tr><td class="td-center td-highlight">08</td><td><strong>Projeção Linear Direta sobre Pesos</strong></td><td>Executa camadas Dense/Linear diretamente a partir de tensores .bgt.</td></tr>
+              <tr><td class="td-center td-highlight">09</td><td><strong>Catálogo SafeTensors com mmap (.bgtt)</strong></td><td>Carrega tensores individuais em ~1,2 ms sem alocar o modelo completo.</td></tr>
+              <tr><td class="td-center td-highlight">10</td><td><strong>Checkpoints Diferenciais Lossless (.bgtd)</strong></td><td>Reduz em mais de 90% o armazenamento de versões históricas de fine-tuning.</td></tr>
+              <tr><td class="td-center td-highlight">11</td><td><strong>Tensores Progressivos Dual-Tier (.bgtp)</strong></td><td>Inicialização imediata em BF16 com refinamento FP32 exato sob demanda.</td></tr>
+              <tr><td class="td-center td-highlight">12</td><td><strong>Telemetria Epistêmica (Surprisal Ranks)</strong></td><td>Filtra e prioriza datasets de treinamento de IA sem exigir processamento em GPU.</td></tr>
+              <tr><td class="td-center td-highlight">13</td><td><strong>Transcodificação Universal (.bgtu)</strong></td><td>Reduz PNG, JPEG, MP4, PDF e ZIP preservando o SHA-256 original exato.</td></tr>
+              <tr><td class="td-center td-highlight">14</td><td><strong>Kernels Multimídia Causais 1D, 2D e 3D</strong></td><td>Modelagem matemática especializada para áudio PCM, imagens espaciais e vídeo.</td></tr>
+              <tr><td class="td-center td-highlight">15</td><td><strong>Acesso Espacial 2D por Regiões (.bgttile)</strong></td><td>Decodifica apenas o recorte espacial (x, y, w, h) necessário em imagens gigapixel.</td></tr>
+              <tr><td class="td-center td-highlight">16</td><td><strong>Banco de Objetos em Slab Único (.bgts)</strong></td><td>Recupera registros individuais em ~0,18 ms com complexidade temporal O(1).</td></tr>
+              <tr><td class="td-center td-highlight">17</td><td><strong>Streaming Contínuo de Memória O(1) (.bgtv)</strong></td><td>Processa fluxos infinitos de dados sem crescimento do consumo de memória RAM.</td></tr>
+              <tr><td class="td-center td-highlight">18</td><td><strong>Dicionários de Domínio (.bgtpr)</strong></td><td>Alta compressão mesmo em mensagens de baixa granularidade e payloads de API.</td></tr>
+              <tr><td class="td-center td-highlight">19</td><td><strong>Criptografia Autenticada BGT-AE (AES-256-SIV)</strong></td><td>Proteção industrial resistente a reuso acidental de nonce com vínculo de contexto AAD.</td></tr>
+              <tr><td class="td-center td-highlight">20</td><td><strong>Defesa Nativa Anti-Decompression Bomb</strong></td><td>Validação prévia estrita de max_output_bytes para prevenir ataques de exaustão.</td></tr>
+              <tr><td class="td-center td-highlight">21</td><td><strong>Escrita Atômica Multi-OS</strong></td><td>Sincronização física de disco à prova de quedas de energia e corrupção parcial.</td></tr>
+              <tr><td class="td-center td-highlight">22</td><td><strong>Operação 100% Offline e Air-Gapped</strong></td><td>Zero telemetria externa, zero tráfego de rede, soberania operacional plena.</td></tr>
+              <tr><td class="td-center td-highlight">23</td><td><strong>Interface Visual Baguet Studio</strong></td><td>Operação acessível para equipes técnicas e não-técnicas em qualquer sistema operacional.</td></tr>
+              <tr><td class="td-center td-highlight">24</td><td><strong>Governança Freemium sem Lock-in</strong></td><td>Descompressão e verificação sempre livres (MIT); motor de compressão BUSL-1.1.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SEÇÃO 09: ESCOPO & ENTROPIA -->
+      <section class="doc-section" id="escopo-operacional">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[LIMITES FÍSICOS]</div>
+            <h2 class="section-heading">09. Escopo Operacional Realista &amp; Entropia de Shannon</h2>
+          </div>
+          <div class="section-acc-num">SEC.LITE-09</div>
+        </div>
+
+        <p>
+          O BAGUET baseia sua comunicação na transparência científica e no rigor da Teoria da Informação:
+        </p>
+
+        <ul>
+          <li><strong>Onde os Ganhos são Transformadores:</strong> Tensores de IA (FP32, FP16, BF16), bancos de embeddings vetoriais (RAG), KV-Cache de LLMs, checkpoints de modelos, tabelas colunares (Parquet/CSV), logs estruturados (JSONL), código-fonte e acervos multimídia.</li>
+          <li><strong>Limites Físicos da Entropia de Shannon:</strong> Dados puramente aleatórios ou previamente cifrados (como fluxos AES ou ChaCha20 sem a chave de decifração revelada) não possuem redundância matemática explorável por nenhum compressor sem perdas. O BAGUET detecta a incompressibilidade em tempo constante e adota o modo <em>bypass seguro</em>, preservando a integridade SHA-256 e evitando queima inútil de ciclos de CPU.</li>
+        </ul>
+      </section>
+
+      <!-- SEÇÃO 10: DISTRIBUIÇÃO & BGTL1 -->
+      <section class="doc-section" id="distribuicao-bgtl1">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[MODELO DE NEGÓCIO SEM DEPENDÊNCIA]</div>
+            <h2 class="section-heading">10. Modelo de Distribuição, Limites de Entrega e Governança Offline (BGTL1)</h2>
+          </div>
+          <div class="section-acc-num">SEC.LITE-10</div>
+        </div>
+
+        <p>
+          O BAGUET v1.0.0 é distribuído sob o modelo de licenciamento dual <strong>BUSL-1.1 AND MIT</strong>, com governança de nós verificada de forma 100% offline via assinaturas criptográficas <strong>Ed25519 (tokens BGTL1)</strong>:
+        </p>
+
+        <div class="table-container">
+          <table class="swiss-table">
+            <thead>
+              <tr>
+                <th>Capacidade Técnica / Cota Operacional</th>
+                <th>00. Community</th>
+                <th>01. Pro</th>
+                <th>02. Growth</th>
+                <th>03. Enterprise</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Descompressão Universal .bgt*</strong></td>
+                <td class="td-highlight">Ilimitada (Sempre Livre)</td>
+                <td>Ilimitada</td>
+                <td>Ilimitada</td>
+                <td>Ilimitada</td>
+              </tr>
+              <tr>
+                <td><strong>Payload Máximo por Operação (max_bytes)</strong></td>
+                <td>Até <strong>64 MB</strong> (1 worker)</td>
+                <td>Até <strong>8 GB</strong> (16 workers)</td>
+                <td>Até <strong>64 GB</strong> (64 workers)</td>
+                <td><strong>Ilimitado (1 TB+ / 64 workers)</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Sandbox / Execução Direta de Kernels IA</strong></td>
+                <td>Até <strong>16 MB</strong> (Local/Dev)</td>
+                <td>RAG Top-K + Fast-Mode</td>
+                <td><strong>Suite IA Completa (64 GB)</strong></td>
+                <td><strong>Suite IA Completa Ilimitada</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Escala Comercial (Nós / Containers)</strong></td>
+                <td>Local / Avaliação</td>
+                <td>Até 8 nós</td>
+                <td>Até 64 nós</td>
+                <td><strong>Cluster Soberano Ilimitado</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Criptografia BGT-AE &amp; Dicionários .bgtpr</strong></td>
+                <td>—</td>
+                <td>—</td>
+                <td><strong>Incluso (--production)</strong></td>
+                <td><strong>Incluso + HSM / Custom Key Shards</strong></td>
+              </tr>
+              <tr>
+                <td><strong>Token Offline BGTL1 &amp; Grace Period</strong></td>
+                <td>Automático (Sem Chave)</td>
+                <td>Token BGTL1 (7 dias)</td>
+                <td>Token BGTL1 (15 dias)</td>
+                <td><strong>Token Air-Gapped (até 90 dias)</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p style="font-size: 13px; color: var(--ink-muted);">
+          Para consultar os planos comerciais atualizados, contratar licenças ou solicitar parcerias OEM/Enterprise, consulte o portal oficial em <a href="https://baguet.soilore.com" target="_blank" rel="noopener" style="color: var(--accent-swiss); font-weight: 700;">https://baguet.soilore.com</a> ou envie sua solicitação para <strong>contact@soilore.com</strong>.
+        </p>
+      </section>
+
+      <!-- SEÇÃO 11: PUBLICAÇÃO DEFENSIVA & PRIOR ART -->
+      <section class="doc-section" id="publicacao-defensiva">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[DEFENSIVE PUBLICATION // PRIOR ART]</div>
+            <h2 class="section-heading">11. Declaração de Publicação Defensiva e Anterioridade Técnica (Defensive Prior Art Disclosure)</h2>
+          </div>
+          <div class="section-acc-num">SEC.LITE-11</div>
+        </div>
+
+        <p>
+          O presente documento constitui uma <strong>Publicação Defensiva Pública Internacional</strong> (<em>Defensive Publication / Prior Art Disclosure</em>) formalizada sob as diretrizes da <strong>Convenção da União de Paris para a Proteção da Propriedade Industrial (CUP)</strong>, do <strong>Tratado de Cooperação em Matéria de Patentes (PCT)</strong> e da <strong>Organização Mundial da Propriedade Intelectual (OMPI / WIPO)</strong>.
+        </p>
+
+        <p>
+          A divulgação pública e irrestrita das formulações matemáticas, métodos de particionamento e permutação de planos de bits ortogonais, transcodificação algébrica reversível BGTU6, aceleração vetorial SIMD e busca sub-linear em representações comprimidas aqui documentadas estabelece estado da técnica mundial intransponível a partir de sua data de divulgação. Nenhuma entidade terceira poderá subsequentemente reivindicar novidade ou atividade inventiva sobre os conceitos fundamentais do ecossistema BAGUET.
+        </p>
+
+        <!-- CERTIFICADO OFICIAL DE ANTERIORIDADE -->
+        <div class="terminal-chassis">
+          <div class="terminal-bezel">
+            <div class="terminal-bezel-left">
+              <span class="terminal-indicator"></span>
+              <span class="terminal-bezel-tag">CERTIFICADO PERICIAL // ANCORAGEM DE ANTERIORIDADE TÉCNICA</span>
+              <span class="terminal-lang-badge">ots</span>
+            </div>
+            <button class="terminal-copy-btn" onclick="copySnippet(this)">[ ⌘C COPIAR ]</button>
+          </div>
+          <pre class="code-block"><code class="language-text">================================================================================
+CERTIFICADO OFICIAL DE PUBLICAÇÃO DEFENSIVA &amp; SOFTWARE COPYRIGHT (BAGUET v1.0.0)
+================================================================================
+Protocolo de Registro   : Carimbo Temporal Criptográfico Público (OpenTimestamps)
+Algoritmo de Integridade: SHA-256 (FIPS 180-4)
+Fundamentação Legal     : Convenção da União de Paris (CUP), PCT e Tratados OMPI/WIPO
+Ativos Homologados      : Especificação Litepaper, Motor Rust Nativo e Wrapper Python
+
+CLASSIFICAÇÕES INTERNACIONAIS DE PATENTES (IPC):
+- H03M 7/30  : Métodos ou algoritmos de compressão/descompressão sem perdas de dados.
+- G06F 16/174: Redução de redundância e desduplicação em sistemas de arquivos e memória.
+- G06N 3/04  : Arquiteturas de redes neurais e tensores de inteligência artificial.
+- G06N 3/08  : Aprendizado de máquina e persistência diferencial de modelos.
+- H04N 19/91 : Codificação por entropia e transcodificação reversível multimídia.
+
+HASH SHA-256 DO CÓDIGO CONGELADO:
+[INSIRA_AQUI_A_HASH_SHA256_REAL_DO_ARQUIVO_CONGELADO]
+
+RECIBO CRIPTOGRÁFICO DE ANTERIORIDADE (.ots):
+[INSIRA_AQUI_O_LINK_OU_IDENTIFICADOR_DO_RECIBO_OTS]
+================================================================================</code></pre>
+        </div>
+      </section>
+
+      <!-- RODAPÉ DA CHANCELARIA -->
+      <footer style="margin-top: 100px; padding-top: 32px; border-top: 2px solid var(--ink-primary); font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <strong>BAGUET v1.0.0</strong> // SOILORE TECH &amp; ECOSYSTEM CONTRIBUTORS
+        </div>
+        <div>
+          C-ABI: RUST-SIMD (AVX2/NEON)
+        </div>
+        <div>
+          LICENCIAMENTO: <span class="swiss-red">BUSL-1.1 AND MIT</span>
+        </div>
+      </footer>
+    
+    </main>
+  </div>
+
+  <!-- BOTÃO VOLTAR AO TOPO -->
+  <button class="back-to-top-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Voltar ao início">
+    <span>[ ↑ VOLTAR AO TOPO ]</span>
+  </button>
+
+  <!-- TOAST DE NOTIFICAÇÃO -->
+  <div id="toast" class="toast-indicator">SNIPPET COPIADO COM SUCESSO [OK]</div>
+
+  <script>
+    function filterSidebarIndex() {
+      const query = document.getElementById('sidebar-filter-input').value.toLowerCase();
+      const items = document.querySelectorAll('#sidebar-nav-list .nav-item');
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(query)) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    function copySnippet(btn) {
+      const chassis = btn.closest('.terminal-chassis');
+      if (!chassis) return;
+      const codeEl = chassis.querySelector('code');
+      if (!codeEl) return;
+      const code = codeEl.innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const originalText = btn.innerText;
+        btn.innerText = '[ COPIADO! ]';
+        btn.style.background = 'var(--accent-swiss)';
+        btn.style.borderColor = 'var(--accent-swiss)';
+        const toast = document.getElementById('toast');
+        if (toast) {
+          toast.style.display = 'block';
+          setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        }
+        setTimeout(() => {
+          btn.innerText = originalText;
+          btn.style.background = '#242424';
+          btn.style.borderColor = '#444';
+        }, 2000);
+      }).catch(err => {
+        console.error('Falha ao copiar:', err);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const sections = document.querySelectorAll('section.doc-section, article.catalog-monumental-card');
+      const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+
+      window.addEventListener('scroll', () => {
+        let currentId = '';
+        const scrollPosition = window.scrollY + 120;
+
+        sections.forEach(section => {
+          if (section.offsetTop <= scrollPosition) {
+            currentId = section.getAttribute('id');
+          }
+        });
+
+        if (currentId) {
+          navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + currentId) {
+              link.classList.add('active');
+            }
+          });
+        }
+      }, { passive: true });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+Baguet Community & Commercial License v1.0
+(BUSL-1.1 AND MIT)
+
+Copyright (c) 2026 Soilore Tech. All rights reserved.
+
+1. Free Public Decompression Forever
+Under the terms of the MIT License, permission is hereby granted, free of charge,
+to any person obtaining a copy of this software to decompress and inspect any
+Baguet format artifact (.bgt, .bgtu, .bgtt, .bgtd, .bgtp, .bgts, .bgtpr) without restriction.
+
+2. Business Source License (BUSL-1.1)
+Commercial production compression, AI tensor manipulation, KV-cache acceleration,
+and enterprise multi-node deployment require a valid commercial license token (BGTL1)
+issued by Soilore Tech or an authorized partner.
+
+For complete terms, compliance definitions, and licensing details, visit:
+https://baguet.soilore.com/legal/terms.html

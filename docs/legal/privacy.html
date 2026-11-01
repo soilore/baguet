@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BAGUET v1.0.0 // POLÍTICA DE PRIVACIDADE E GOVERNANÇA DE DADOS</title>
+  <meta name="description" content="Política de Privacidade e Governança de Dados do BAGUET v1.0.0. Arquitetura Zero Telemetry by Design, processamento estritamente local, conformidade com os mais elevados padrões internacionais de privacidade e soberania de dados.">
+  <link rel="icon" type="image/png" href="../studio/baguet-favicon-white-512.png">
+
+  <!-- 
+    BAGUET v1.0.0 — OFFICIAL PRIVACY & DATA GOVERNANCE SPECIFICATION
+    Design System: 1px Hairline Architecture, 0px Border-Radius, Zero Emojis, 100% Offline
+  -->
+
+  <style>
+    /* ==========================================================================
+       1. DESIGN TOKENS KUNSTHALLE BASEL × DIETER RAMS (BRAUN 1965)
+       ========================================================================== */
+    :root {
+      --bg-museum: #F6F5F0;       /* Papel algodão arquitetônico cru — 60%+ espaço negativo */
+      --bg-plinth: #EFECE6;       /* Pedestal de pedra calcária / bancada de laboratório */
+      --bg-card: #FFFFFF;         /* Ficha catalográfica / chassi branco puro */
+      --bg-terminal: #0A0A0A;     /* Alumínio anodizado preto / console de comando */
+      --ink-primary: #0A0A0A;     /* Tinta preta litográfica profunda */
+      --ink-muted: #6E6D68;       /* Grafite técnico curatorial */
+      --accent-swiss: #D92B2B;    /* Vermelho Internacional Suíço cirúrgico */
+      --accent-crypto: #14213D;   /* Azul Marinho Criptográfico (Ed25519 / AES-256-SIV) */
+      --accent-green: #2E7D32;    /* Verde militar de verificação pericial */
+      
+      --hairline: 1px solid var(--ink-primary);
+      --hairline-subtle: 1px solid rgba(10, 10, 10, 0.15);
+      --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Berkeley Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+      
+      --header-h: 52px;
+      --sidebar-w: 320px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      border-radius: 0px !important; /* REGRA CAPITAL: ZERO BORDAS ARREDONDADAS */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent-swiss) !important;
+      outline-offset: 1px !important;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-museum);
+      color: var(--ink-primary);
+    }
+
+    body {
+      background-color: var(--bg-museum);
+      color: var(--ink-primary);
+      font-family: var(--font-display);
+      font-size: 14.5px;
+      line-height: 1.65;
+      letter-spacing: -0.01em;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    ::selection {
+      background: var(--accent-swiss);
+      color: #FFFFFF;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+      font-feature-settings: "tnum" 1, "zero" 1;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+
+    .swiss-red { color: var(--accent-swiss); }
+    .crypto-blue { color: var(--accent-crypto); }
+    .text-muted { color: var(--ink-muted); }
+
+    /* Miras de Registro Tipográfico (+) */
+    .reg-mark {
+      position: relative;
+    }
+    .reg-mark::before, .reg-mark::after {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent-swiss);
+      line-height: 1;
+      width: 14px;
+      height: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .reg-mark.top-left::before { content: "+"; top: -1px; left: -1px; transform: translate(-50%, -50%); }
+    .reg-mark.top-right::after { content: "+"; top: -1px; right: -1px; transform: translate(50%, -50%); }
+    .reg-mark.bottom-left::before { content: "+"; bottom: -1px; left: -1px; transform: translate(-50%, 50%); }
+    .reg-mark.bottom-right::after { content: "+"; bottom: -1px; right: -1px; transform: translate(50%, 50%); }
+
+    /* ==========================================================================
+       2. CABEÇALHO SUPERIOR MONUMENTAL TIPO INSTRUMENTO
+       ========================================================================== */
+    .doc-topbar {
+      position: sticky;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: var(--header-h);
+      background-color: var(--bg-museum);
+      border-bottom: var(--hairline);
+      z-index: 1000;
+      display: flex;
+      align-items: stretch;
+      justify-content: space-between;
+    }
+
+    .topbar-cell {
+      border-right: var(--hairline);
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+    }
+
+    .topbar-brand {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      gap: 12px;
+      white-space: nowrap;
+    }
+
+    .topbar-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border: 1px solid var(--accent-swiss);
+      background: var(--accent-swiss);
+      color: #FFF;
+      letter-spacing: 0.05em;
+    }
+
+    
+    /* ==========================================================================
+       TABS DE ALTERNÂNCIA DE DOCUMENTOS & CABEÇALHO SUPERIOR MONUMENTAL
+       ALINHADO VERTICALMENTE COM O SIDEBAR (WIDTH: VAR(--SIDEBAR-W))
+       ========================================================================== */
+    .doc-topbar {
+      position: sticky;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: var(--header-h);
+      background-color: var(--bg-museum);
+      border-bottom: var(--hairline);
+      z-index: 1000;
+      display: flex;
+      align-items: stretch;
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    .topbar-cell {
+      display: flex;
+      align-items: center;
+    }
+
+    /* Caixa da logo com largura idêntica ao sidebar (320px) para alinhamento vertical absoluto */
+    .topbar-brand {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      max-width: var(--sidebar-w);
+      height: 100%;
+      box-sizing: border-box;
+      border-right: var(--hairline);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      background: var(--bg-museum);
+    }
+
+    .topbar-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border: 1px solid var(--accent-swiss);
+      background: var(--accent-swiss);
+      color: #FFF;
+      letter-spacing: 0.05em;
+    }
+
+    /* Tabs de Alternância de Documentos - Sem borda esquerda duplicada e sem margem */
+    .topbar-doc-tabs {
+      display: flex;
+      align-items: stretch;
+      margin: 0;
+      padding: 0;
+      border-left: none; /* ELIMINA LINHA DIVISÓRIA DUPLICADA */
+    }
+
+    .topbar-doc-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 20px;
+      background: transparent;
+      border: none;
+      border-right: var(--hairline);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--ink-muted);
+      cursor: pointer;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: all 0.12s ease;
+      white-space: nowrap;
+    }
+
+    .topbar-doc-tab:hover {
+      background: var(--bg-plinth);
+      color: var(--ink-primary);
+    }
+
+    .topbar-doc-tab.active {
+      background: #FFFFFF;
+      color: var(--ink-primary);
+      box-shadow: inset 0 -2px 0 var(--accent-swiss);
+    }
+
+    /* Espaçador neutro que preenche o vão central até as ações da direita */
+    .topbar-status-spacer {
+      flex: 1;
+      height: 100%;
+      border-right: var(--hairline);
+      background: transparent;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: stretch;
+    }
+
+    .topbar-btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      background: transparent;
+      border: none;
+      border-right: var(--hairline);
+      padding: 0 16px;
+      cursor: pointer;
+      color: var(--ink-primary);
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.12s ease;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .topbar-btn:hover {
+      background: var(--bg-plinth);
+      color: var(--accent-swiss);
+    }
+
+    .topbar-btn:last-child {
+      border-right: none;
+    }
+
+    @media (max-width: 960px) {
+      .topbar-brand {
+        width: auto;
+        min-width: 0;
+        max-width: none;
+        padding: 0 12px;
+      }
+      .topbar-status-spacer {
+        display: none;
+      }
+      .topbar-doc-tab {
+        padding: 0 10px;
+        font-size: 10px;
+      }
+      .topbar-btn {
+        padding: 0 10px;
+        font-size: 10px;
+      }
+    }
+
+
+    /* ==========================================================================
+       3. ESTRUTURA GERAL (LAYOUT DE 2 COLUNAS: ÍNDICE + ARTIGO)
+       ========================================================================== */
+    .doc-container {
+      display: flex;
+      min-height: calc(100vh - var(--header-h));
+      position: relative;
+    }
+
+    .doc-sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      border-right: var(--hairline);
+      background: var(--bg-museum);
+      position: sticky;
+      top: var(--header-h);
+      height: calc(100vh - var(--header-h));
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .sidebar-header {
+      padding: 16px 18px;
+      border-bottom: var(--hairline);
+      background: var(--bg-plinth);
+    }
+
+    .sidebar-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--ink-primary);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sidebar-search {
+      margin-top: 10px;
+      position: relative;
+    }
+
+    .sidebar-input {
+      width: 100%;
+      border: 1px solid var(--ink-primary);
+      background: #FFFFFF;
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-primary);
+      outline: none;
+    }
+
+    .sidebar-input:focus {
+      border-color: var(--accent-swiss);
+    }
+
+    .sidebar-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .nav-item {
+      border-bottom: var(--hairline-subtle);
+    }
+
+    .nav-link {
+      display: block;
+      padding: 10px 18px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.4;
+      color: var(--ink-muted);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: all 0.12s ease;
+    }
+
+    .nav-link:hover {
+      background: var(--bg-plinth);
+      color: var(--ink-primary);
+      border-left-color: var(--ink-primary);
+    }
+
+    .nav-link.active {
+      background: #FFFFFF;
+      color: var(--accent-swiss);
+      font-weight: 700;
+      border-left-color: var(--accent-swiss);
+    }
+
+    .nav-code {
+      display: inline-block;
+      font-size: 10px;
+      color: var(--accent-swiss);
+      margin-right: 6px;
+      font-weight: 700;
+    }
+
+    .sidebar-footer {
+      padding: 14px 18px;
+      border-top: var(--hairline);
+      background: var(--bg-plinth);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      line-height: 1.5;
+      color: var(--ink-muted);
+    }
+
+    .doc-main {
+      flex: 1;
+      padding: 48px 64px 120px;
+      max-width: 1120px;
+      margin: 0 auto;
+      background: var(--bg-museum);
+    }
+
+    /* ==========================================================================
+       4. PLINTO MONUMENTAL DA FICHA CATALOGRÁFICA
+       ========================================================================== */
+    .catalog-monumental-card {
+      border: var(--hairline);
+      background: var(--bg-card);
+      padding: 42px;
+      margin-bottom: 56px;
+      position: relative;
+    }
+
+    .catalog-supertitle {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--accent-swiss);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .catalog-title {
+      font-size: 34px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.03em;
+      margin-bottom: 18px;
+      color: var(--ink-primary);
+    }
+
+    .catalog-subline {
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--ink-muted);
+      margin-bottom: 28px;
+      max-width: 900px;
+    }
+
+    .catalog-metadata-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1px;
+      background: var(--ink-primary);
+      border: var(--hairline);
+      margin: 28px 0;
+    }
+
+    .metadata-cell {
+      background: var(--bg-card);
+      padding: 14px 18px;
+    }
+
+    .metadata-label {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .metadata-value {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-primary);
+    }
+
+    .summary-box-3sec {
+      border: 1px solid var(--ink-primary);
+      background: var(--bg-plinth);
+      padding: 24px;
+      margin: 28px 0;
+      position: relative;
+    }
+
+    .summary-box-header {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-swiss);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .summary-box-content {
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--ink-primary);
+    }
+
+    /* ==========================================================================
+       5. PLACAS DE SEÇÃO CATALOGRÁFICA
+       ========================================================================== */
+    .doc-section {
+      margin-top: 64px;
+      padding-top: 32px;
+      border-top: var(--hairline);
+    }
+
+    .section-plate-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--ink-primary);
+      padding-bottom: 12px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .section-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--accent-swiss);
+      text-transform: uppercase;
+    }
+
+    h2.section-heading {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink-primary);
+      margin-top: 4px;
+    }
+
+    .section-acc-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-muted);
+      letter-spacing: 0.05em;
+    }
+
+    h3.subsection-heading {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--ink-primary);
+      margin: 32px 0 16px;
+      padding-left: 12px;
+      border-left: 3px solid var(--accent-swiss);
+    }
+
+    p {
+      margin-bottom: 16px;
+      color: var(--ink-primary);
+    }
+
+    ol, ul {
+      margin: 0 0 20px 24px;
+      color: var(--ink-primary);
+    }
+
+    li {
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+
+    p code, li code {
+      background: var(--bg-plinth);
+      color: var(--ink-primary);
+      border: 1px solid rgba(10, 10, 10, 0.2);
+      padding: 2px 5px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .lab-plate {
+      border: var(--hairline);
+      background: var(--bg-card);
+      padding: 20px 24px;
+      margin: 24px 0;
+      position: relative;
+    }
+
+    .lab-plate-note {
+      border-left: 4px solid var(--ink-primary);
+      background: var(--bg-plinth);
+    }
+
+    .legal-reserved-block {
+      border: 1px dashed var(--ink-primary);
+      background: var(--bg-plinth);
+      padding: 20px;
+      margin: 20px 0;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.6;
+      color: var(--ink-primary);
+      white-space: pre-wrap;
+    }
+
+    .back-to-top-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 28px;
+      background: var(--ink-primary);
+      color: #FFFFFF;
+      border: 1px solid var(--ink-primary);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 10px 16px;
+      cursor: pointer;
+      z-index: 999;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      box-shadow: 4px 4px 0px rgba(10, 10, 10, 0.2);
+    }
+
+    .back-to-top-btn:hover {
+      background: var(--accent-swiss);
+      border-color: var(--accent-swiss);
+    }
+
+    @media (max-width: 960px) {
+      .doc-sidebar { display: none; }
+      .doc-main { padding: 32px 20px 80px; }
+      .catalog-monumental-card { padding: 24px; }
+      .catalog-title { font-size: 26px; }
+      .topbar-status { display: none; }
+    }
+  </style>
+
+</head>
+<body>
+
+  <header class="doc-topbar">
+    <div class="topbar-brand">
+      <span>BAGUET // SYSTEM SPEC</span>
+      <span class="topbar-badge">[v1.0.0]</span>
+    </div>
+
+    <!-- TABS DE NAVEGAÇÃO ENTRE DOCUMENTOS (ALINHADAS AO SIDEBAR) -->
+    <nav class="topbar-doc-tabs" aria-label="Navegação entre documentos">
+      <a href="guide.html" class="topbar-doc-tab " id="tab-guide">
+        <span class="mono swiss-red">[01]</span>
+        <span>GUIA TÉCNICO</span>
+      </a>
+      <a href="terms.html" class="topbar-doc-tab " id="tab-terms">
+        <span class="mono swiss-red">[02]</span>
+        <span>TERMOS &amp; LICENÇA</span>
+      </a>
+      <a href="privacy.html" class="topbar-doc-tab active" id="tab-privacy">
+        <span class="mono swiss-red">[03]</span>
+        <span>PRIVACIDADE</span>
+      </a>
+      <a href="litepaper.html" class="topbar-doc-tab " id="tab-litepaper">
+        <span class="mono swiss-red">[04]</span>
+        <span>LITEPAPER</span>
+      </a>
+    </nav>
+
+    <!-- ESPAÇADOR NEUTRO (SEM TEXTO DE STATUS CONFORME ESPECIFICAÇÃO) -->
+    <div class="topbar-status-spacer"></div>
+
+    <div class="topbar-actions">
+      <a href="https://github.com/soilore/baguet" target="_blank" rel="noopener" class="topbar-btn">
+        [REPO GITHUB]
+      </a>
+      <a href="https://baguet.soilore.com" target="_blank" rel="noopener" class="topbar-btn">
+        [PORTAL WEB]
+      </a>
+      <button class="topbar-btn" onclick="window.print()">
+        [DOWNLOAD]
+      </button>
+    </div>
+  </header>
+
+  <div class="doc-container">
+    <aside class="doc-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">
+          <span>CATALOG INDEX</span>
+          <span class="mono swiss-red">[06 ARTIGOS]</span>
+        </div>
+        <div class="sidebar-search">
+          <input type="text" id="sidebar-filter-input" class="sidebar-input mono" placeholder="FILTRAR PRIVACIDADE..." oninput="filterSidebarIndex()">
+        </div>
+      </div>
+
+      <ul class="sidebar-nav" id="sidebar-nav-list">
+        <li class="nav-item">
+          <a href="#introducao" class="nav-link active">
+            <span class="nav-code">[00]</span> Visão Geral &amp; Resumo
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#nao-coleta" class="nav-link">
+            <span class="nav-code">[01]</span> Não-Coleta Absoluta
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#seguranca-studio" class="nav-link">
+            <span class="nav-code">[02]</span> Rede &amp; Segurança Studio
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#pagamentos-cadastrais" class="nav-link">
+            <span class="nav-code">[03]</span> Cookies, Geolocalização &amp; Faturamento
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#conformidade-global" class="nav-link">
+            <span class="nav-code">[04]</span> Padrões Globais de Privacidade
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#armazenamento-local" class="nav-link">
+            <span class="nav-code">[05]</span> Armazenamento Local &amp; Exclusão
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#texto-juridico" class="nav-link">
+            <span class="nav-code">[06]</span> Termos, Consentimento &amp; Canais
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div><strong>INTEGRIDADE:</strong> SHA-256 BIT-EXACT</div>
+        <div><strong>ARQUITETURA:</strong> AIR-GAPPED 100%</div>
+        <div><strong>SUPORTE:</strong> CONTACT@SOILORE.COM</div>
+      </div>
+    </aside>
+
+    <main class="doc-main">
+      <!-- FICHA CATALOGRÁFICA MONUMENTAL -->
+      <article class="catalog-monumental-card reg-mark top-left bottom-right" id="introducao">
+        <div class="catalog-supertitle">
+          <span>BAGUET DATA GOVERNANCE SPECIFICATION</span>
+          <span>//</span>
+          <span>SPEC-LEGAL-PRIVACY</span>
+          <span>//</span>
+          <span>EDITION 2026.10</span>
+        </div>
+
+        <h1 class="catalog-title">
+          Política de Privacidade e Governança de Dados (Privacy &amp; Data Governance Policy)
+        </h1>
+
+        <p class="catalog-subline">
+          Declaração formal de soberania de dados, arquitetura estrita de <em>Zero Telemetry by Design</em> e conformidade regulatória internacional para execuções 100% locais e isoladas <em>(air-gapped)</em>.
+        </p>
+
+        <!-- GRADE DE METADADOS CURATORIAIS -->
+        <div class="catalog-metadata-grid">
+          <div class="metadata-cell">
+            <div class="metadata-label">ARQUITETURA</div>
+            <div class="metadata-value">Zero Telemetry by Design</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">PROCESSAMENTO</div>
+            <div class="metadata-value">100% Local / Soberano</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">SEGURANÇA</div>
+            <div class="metadata-value">AES-256-SIV &amp; Ed25519</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">CONFORMIDADE</div>
+            <div class="metadata-value">LGPD / GDPR / HIPAA</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">VERSÃO HOMOLOGADA</div>
+            <div class="metadata-value">v1.0.0 Oficial</div>
+          </div>
+          <div class="metadata-cell">
+            <div class="metadata-label">SUPORTE INSTITUCIONAL</div>
+            <div class="metadata-value">contact@soilore.com</div>
+          </div>
+        </div>
+
+        <!-- RESUMO EM 3 SEGUNDOS -->
+        <div class="summary-box-3sec">
+          <div class="summary-box-header">
+            <span>[RESUMO EXECUTIVO]</span>
+          </div>
+          <div class="summary-box-content">
+            <strong>Resumo:</strong> O BAGUET adota a arquitetura estrita de <em>Zero Telemetry by Design</em>. O software opera de forma estritamente local em sua própria infraestrutura, nunca transmite dados de arquivos ou modelos de IA para a internet e não tem acesso ao conteúdo processado.
+          </div>
+        </div>
+      </article>
+
+      <!-- SEÇÃO 1: NÃO-COLETA ABSOLUTA -->
+      <section class="doc-section" id="nao-coleta">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[ARQUITETURA ZERO TELEMETRY]</div>
+            <h2 class="section-heading">1. Princípio da Não-Coleta Absoluta (Zero Telemetry by Design)</h2>
+          </div>
+          <div class="section-acc-num">SEC.PRIV-01</div>
+        </div>
+
+        <ol>
+          <li><strong>Processamento Estritamente Local:</strong> Todo o processamento algorítmico — englobando compressão de dados, descompressão, busca vetorial Top-K, cálculo de atenção direta (Flash-SDPA), reversão de contêineres e validação pericial de integridade matemática — é executado exclusivamente no processador e na memória do ambiente computacional onde o software está instalado. Em nenhum momento arquivos, tensores, matrizes ou modelos são transferidos para servidores externos.</li>
+          <li><strong>Ausência de Telemetria e Rastreadores no Software:</strong> O ecossistema de software BAGUET (o motor nativo compilado, a biblioteca cliente e utilitários de comando, e a interface visual local Studio) foi concebido com zero telemetria. Não existem rotinas de rastreamento oculto, módulos de análise comportamental de uso, comandos automáticos de comunicação remota (<em>phone-home</em>) nem envio de relatórios de diagnósticos sem o consentimento e ação manual explícita do operador.</li>
+          <li><strong>Compatibilidade Nativa com Ambientes Isolados (<em>Air-Gapped</em>):</strong> O software foi projetado e homologado para operar com 100% de sua capacidade em infraestruturas totalmente desconectadas de qualquer rede externa ou acesso à internet (<em>air-gap</em>), sem requerer comunicação remota para validação de licenças ou verificação de chaves.</li>
+        </ol>
+      </section>
+
+      <!-- SEÇÃO 2: REDE E SEGURANÇA DO STUDIO -->
+      <section class="doc-section" id="seguranca-studio">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[SEGURANÇA DE REDE LOCAL]</div>
+            <h2 class="section-heading">2. Arquitetura de Rede e Segurança do BAGUET Studio</h2>
+          </div>
+          <div class="section-acc-num">SEC.PRIV-02</div>
+        </div>
+
+        <ol>
+          <li><strong>Conexão Local Estrita (<em>Loopback</em> <code>127.0.0.1</code>):</strong> A interface visual BAGUET Studio inicia seu serviço de aplicação local associado estritamente à interface de <em>loopback</em> do dispositivo (<code>127.0.0.1</code> / <code>localhost</code>). Requisições ou tentativas de conexão provenientes de outros computadores da rede local ou de redes públicas externas são rejeitadas pelo sistema operacional.</li>
+          <li><strong>Defesa contra Requisições Cruzadas Não Autorizadas:</strong> Os pontos de comunicação internos do Studio validam cabeçalhos de origem (como <code>Origin</code> e <code>Sec-Fetch-Site</code>) e utilizam proteções de sessão locais para assegurar que páginas ou scripts abertos em outras abas ou janelas do navegador não consigam disparar requisições para a porta de execução local.</li>
+          <li><strong>Isolamento de Dados no Navegador:</strong> A interface gráfica utiliza o armazenamento de preferências do navegador (<code>localStorage</code>) exclusivamente para registrar preferências de experiência do usuário (como opções cosméticas de tema e o idioma selecionado entre os disponíveis), sem gerar cookies de rastreamento de perfil entre sites nem coletar hábitos de navegação.</li>
+        </ol>
+      </section>
+
+      <!-- SEÇÃO 3: NAVEGAÇÃO WEB, COOKIES, GEOLOCALIZAÇÃO E FATURAMENTO -->
+      <section class="doc-section" id="pagamentos-cadastrais">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[NAVEGAÇÃO WEB, COOKIES &amp; CADASTRO]</div>
+            <h2 class="section-heading">3. Navegação Web, Política de Cookies, Geolocalização e Tratamento Cadastral</h2>
+          </div>
+          <div class="section-acc-num">SEC.PRIV-03</div>
+        </div>
+
+        <p>
+          Em sua navegação em nosso portal web (<a href="https://baguet.soilore.com" target="_blank" rel="noopener">baguet.soilore.com</a>) e/ou durante a interação com serviços online vinculados ao ecossistema, poderão ser utilizados determinados tipos de cookies, identificadores técnicos e recursos de coleta de dados de conexão e geolocalização para finalidades operacionais, fiscais e de segurança cibernética, <strong>não se limitando aos abaixo citados</strong>:
+        </p>
+
+        <ol>
+          <li>
+            <strong>Categorias e Tipos de Cookies Utilizados:</strong>
+            <ul>
+              <li><strong>Cookies Estritamente Necessários e de Segurança:</strong> Indispensáveis para permitir a navegação segura pelo portal, autenticar sessões legítimas, equilibrar cargas de servidores, prevenir ataques de negação de serviço (DDoS) e impedir fraudes eletrônicas em formulários e requisições;</li>
+              <li><strong>Cookies de Funcionalidade e Preferências:</strong> Empregados para armazenar parâmetros definidos pelo próprio visitante, tais como preferências regionais, idioma de leitura da documentação e opções visuais de interface;</li>
+              <li><strong>Cookies Analíticos e de Desempenho Técnico:</strong> Utilizados de forma puramente agregada e anonimizada para aferir taxas de resposta, estabilidade de carregamento de páginas e volumes de tráfego, auxiliando no planejamento de capacidade de nossa infraestrutura sem identificar pessoas físicas individualmente.</li>
+            </ul>
+          </li>
+          <li><strong>Coleta e Tratamento de Geolocalização e Dados de Conexão:</strong> Durante a navegação no portal oficial e, em especial, no ato de aquisição ou contratação de planos comerciais e emissão de tokens de ativação, poderão ser coletadas informações de conexão (incluindo endereço de protocolo de internet - IP) e geolocalização aproximada. Essas informações são processadas com a finalidade estrita de determinar o domicílio tributário da operação, apurar alíquotas fiscais incidentes (como retenção na fonte e tributos internacionais de importação/exportação de software), combater fraudes cadastrais e cumprir obrigações legais perante administrações tributárias competentes.</li>
+          <li><strong>Processamento de Pagamentos e Padrão Bancário PCI-DSS:</strong> Na contratação de tiers comerciais, as transações financeiras são processadas por intermediadores de pagamento internacionais parceiros de elevada reputação, certificados no padrão máximo de segurança bancária global (PCI-DSS Nível 1). A Soilore Tech e a equipe do BAGUET <strong>nunca</strong> armazenam, tratam ou têm acesso a números completos de cartões de crédito ou códigos de segurança financeira dos compradores.</li>
+          <li><strong>Minimização Cadastral Corporativa:</strong> A coleta de informações cadastrais é restrita aos dados indispensáveis para identificação do adquirente, emissão de faturas e recibos fiscais e entrega do token criptográfico offline (<code>BGTL1</code>), englobando fundamentalmente a denominação da organização e o correio eletrônico corporativo para contato técnico e financeiro.</li>
+        </ol>
+      </section>
+
+      <!-- SEÇÃO 4: CONFORMIDADE COM PADRÕES GLOBAIS DE PRIVACIDADE -->
+      <section class="doc-section" id="conformidade-global">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[PADRÕES GLOBAIS DE PRIVACIDADE]</div>
+            <h2 class="section-heading">4. Conformidade com Padrões Internacionais de Proteção de Dados</h2>
+          </div>
+          <div class="section-acc-num">SEC.PRIV-04</div>
+        </div>
+
+        <p>
+          O BAGUET é desenvolvido e distribuído em consonância com as melhores práticas de governança e com os mais rigorosos princípios internacionais de proteção de dados e privacidade:
+        </p>
+
+        <ol>
+          <li><strong>Princípios Fundamentais de <em>Privacy by Design</em> e <em>Privacy by Default</em>:</strong> A arquitetura do BAGUET assegura que a privacidade e o isolamento de informações constituam o padrão original de funcionamento, e não uma configuração a ser lembrada ou ativada manualmente pelo operador. O código-fonte compilado não realiza cópias de dados em trânsito nem armazena telemetria não autorizada.</li>
+          <li><strong>Soberania Exclusiva do Controlador e Não-Transferência Internacional:</strong> O software atua estritamente como ferramenta instalada e executada na infraestrutura do próprio usuário (modelo <em>on-premises</em> / soberano). A organização licenciada retém o controle absoluto, a titularidade e a custódia integral de seus bancos de dados e tensores, sem ocorrência de transferências internacionais não autorizadas de dados pessoais por parte do software.</li>
+          <li><strong>Aptidão para Dados Sensíveis e Informações Críticas de Saúde:</strong> Por funcionar em modalidade desconectada de redes públicas (<em>air-gapped</em>) e integrar recursos nativos de cifragem autenticada de dados em repouso (<code>BGT-AE</code> / AES-256-SIV), o software atende integralmente aos requisitos técnicos exigidos para o processamento confidencial de registros industriais de missão crítica, prontuários de saúde e dados sensíveis, garantindo integridade e sigilo incondicionais.</li>
+          <li><strong>Compromisso de Não-Comercialização de Dados:</strong> Sob nenhuma hipótese o BAGUET comercializa, compartilha, aluga, monetiza ou transfere dados cadastrais de usuários ou registros de navegação para empresas de publicidade, corretores de informações (<em>data brokers</em>) ou parceiros de marketing.</li>
+        </ol>
+      </section>
+
+      <!-- SEÇÃO 5: ARMAZENAMENTO LOCAL E EXCLUSÃO PELO USUÁRIO -->
+      <section class="doc-section" id="armazenamento-local">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[PERSISTÊNCIA LOCAL &amp; SOBERANIA]</div>
+            <h2 class="section-heading">5. Armazenamento Local, Retenção e Exclusão Definitiva de Informações</h2>
+          </div>
+          <div class="section-acc-num">SEC.PRIV-05</div>
+        </div>
+
+        <ol>
+          <li><strong>Escopo de Arquivos Mantidos em Disco Local:</strong> As únicas informações mantidas no disco local do ambiente do operador são aquelas imprescindíveis para a autenticação offline de licenças contratadas e a personalização da interface local (como preferências de idioma e tema), restritas ao diretório de configuração do usuário em seu próprio sistema operacional.</li>
+          <li><strong>Exclusão Soberana e Autônoma:</strong> O usuário possui total autonomia para desinstalar o software e excluir imediatamente qualquer diretório ou arquivo residual a qualquer tempo, utilizando os comandos e utilitários regulares de seu ambiente operacional, sem a necessidade de solicitações de suporte, autorizações prévias ou comunicação com servidores remotos.</li>
+          <li><strong>Inexistência de Retenção Remota de Dados de Produção:</strong> Nenhum dado, índice de busca, resumo matemático ou histórico de operações processado pelo software permanece gravado em servidores da Soilore Tech ou em nuvens terceiras. A integridade e o descarte dos dados de trabalho constituem prerrogativa privativa do operador.</li>
+        </ol>
+      </section>
+
+      <!-- SEÇÃO 6: DISPOSIÇÕES JURÍDICAS, CONSENTIMENTO E CANAIS FORMAIS -->
+      <section class="doc-section" id="texto-juridico">
+        <div class="section-plate-header">
+          <div>
+            <div class="section-tag">[TERMOS JURÍDICOS &amp; CONSENTIMENTO]</div>
+            <h2 class="section-heading">6. Disposições Finais, Direitos do Titular, Gestão de Consentimento e Canais Oficiais</h2>
+          </div>
+          <div class="section-acc-num">SEC.PRIV-06</div>
+        </div>
+
+        <ol>
+          <li>
+            <strong>Consentimento Informado e Aceitação dos Termos:</strong> O acesso ao nosso portal, o download de pacotes ou a operação de qualquer componente do ecossistema de software BAGUET implica a declaração de que o usuário ou organização tomou conhecimento prévio desta Política de Privacidade e dos Termos de Uso aplicáveis, aceitando-os em sua integralidade. O uso contínuo de nossos serviços ou da documentação após a publicação de revisões deste documento constituirá a confirmação de aceitação das condições atualizadas.
+          </li>
+          <li>
+            <strong>Direitos Assegurados aos Titulares de Dados:</strong> Em conformidade com os mais rigorosos padrões internacionais de governança e privacidade, são assegurados aos usuários e representantes de organizações contratantes os seguintes direitos sobre seus dados cadastrais mantidos formalmente:
+            <ul>
+              <li><strong>Confirmação e Acesso:</strong> Direito de obter confirmação da existência de tratamento e acessar os dados cadastrais e fiscais mantidos por força da relação comercial;</li>
+              <li><strong>Retificação e Atualização:</strong> Direito de solicitar a correção imediata de informações cadastrais incompletas, incorretas ou desatualizadas;</li>
+              <li><strong>Eliminação e Anonimização:</strong> Prerrogativa de requerer a exclusão ou anonimização de dados cadastrais quando finda a relação contratual, ressalvada a retenção de dados obrigatória para cumprimento de deveres legais, regulatórios e fiscais;</li>
+              <li><strong>Revogação de Comunicações:</strong> Faculdade de cancelar a qualquer momento o recebimento de mensagens institucionais, avisos operacionais ou notificações que não sejam estritamente essenciais à segurança do software ou à execução do contrato.</li>
+            </ul>
+          </li>
+          <li>
+            <strong>Gerenciamento de Cookies pelo Visitante:</strong> O visitante ou usuário pode gerenciar suas preferências de cookies diretamente através dos menus de configuração de seu próprio navegador web, podendo bloquear, limpar ou restringir o salvamento de cookies a qualquer momento. Ressalta-se que a desativação de cookies estritamente necessários poderá afetar a funcionalidade de áreas protegidas ou do fluxo de aquisição e faturamento online.
+          </li>
+          <li>
+            <strong>Salvaguardas de Segurança da Informação:</strong> Todas as transmissões de informações cadastrais e requisições direcionadas ao nosso portal web são protegidas por protocolos modernos de criptografia de canal (HTTPS / TLS 1.3), controles rigorosos de privilégios de acesso e rotinas contínuas de prevenção a incidentes cibernéticos.
+          </li>
+          <li>
+            <strong>Atualizações e Publicidade das Alterações:</strong> Esta Política de Privacidade poderá ser aprimorada a qualquer momento para incorporar novas salvaguardas de segurança, adequar-se a evoluções técnicas ou alinhar-se a melhores práticas da indústria. Todas as alterações serão publicadas na documentação oficial com menção à data de sua última revisão.
+          </li>
+          <li>
+            <strong>Canal de Atendimento e Comunicação sobre Privacidade:</strong> Para esclarecer dúvidas, solicitar informações adicionais sobre nossas práticas de governança de dados, requisitar o exercício de direitos previstos nesta política ou enviar comunicados formais sobre privacidade, disponibilizamos nosso canal oficial de comunicação: </strong> <span class="swiss-red">contact@soilore.com</span>.
+          </li>
+        </ol>
+      </section>
+
+      <!-- RODAPÉ FINAL -->
+      <footer style="margin-top: 100px; padding-top: 32px; border-top: 2px solid var(--ink-primary); font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <strong>BAGUET v1.0.0</strong> // SOILORE TECH &amp; ECOSYSTEM CONTRIBUTORS
+        </div>
+        <div>
+          C-ABI: RUST-SIMD (AVX2/NEON)
+        </div>
+        <div>
+          LICENCIAMENTO: <span class="swiss-red">BUSL-1.1 AND MIT</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <button class="back-to-top-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+    <span>[ ↑ TOPO ]</span>
+  </button>
+
+  <script>
+    function filterSidebarIndex() {
+      const input = document.getElementById('sidebar-filter-input');
+      const filter = input.value.toUpperCase();
+      const list = document.getElementById('sidebar-nav-list');
+      const items = list.getElementsByTagName('li');
+
+      for (let i = 0; i < items.length; i++) {
+        const link = items[i].getElementsByTagName('a')[0];
+        if (link) {
+          const txtValue = link.textContent || link.innerText;
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            items[i].style.display = '';
+          } else {
+            items[i].style.display = 'none';
+          }
+        }
+      }
+    }
+
+    window.addEventListener('scroll', () => {
+      const sections = document.querySelectorAll('section.doc-section, article.catalog-monumental-card');
+      const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+      let currentId = '';
+
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop - 120;
+        if (window.pageYOffset >= sectionTop) {
+          currentId = section.getAttribute('id');
+        }
+      });
+
+      if (currentId) {
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === '#' + currentId) {
+            link.classList.add('active');
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
