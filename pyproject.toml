@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68", "wheel", "cryptography>=41"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "baguet"
+version = "1.0.0"
+description = "BAGUET v1.0.0 — Algebraic Lossless Memory Engine & Zero-Decompression Compute SDK"
+requires-python = ">=3.10"
+license = { text = "BUSL-1.1 AND MIT" }
+dependencies = [
+  "numpy>=1.24",
+  "cryptography>=41",
+]
+
+[project.urls]
+Homepage = "https://baguet.soilore.com"
+Documentation = "https://baguet.soilore.com/legal/guide.html"
+Repository = "https://github.com/soilore/baguet"
+Issues = "https://github.com/soilore/baguet/issues"
+
+[project.optional-dependencies]
+torch = ["torch>=2.1", "ml_dtypes>=0.3"]
+
+[project.scripts]
+baguet = "baguet_sdk:main"
+Activate-Baguet = "baguet_sdk:activate_main"
+baguet-studio = "baguet_sdk:studio_main"
+baguet-landing = "baguet_sdk:landing_main"
+baguet-desktop-compress = "baguet_sdk:desktop_compress_main"
+
+[tool.setuptools]
+py-modules = ["baguet_sdk", "baguet_sdk_layer"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"*" = [
+    "engine-baguet.py",
+    "engine-baguet.pyc",
+    "libbaguet_rust_core.dylib",
+    "libbaguet_rust_core.so",
+    "baguet_rust_core.dll",
+    "DIST-INTEGRITY.json",
+    "studio/*",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
