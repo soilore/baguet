@@ -1,0 +1,33 @@
+{% set version = "1.0.2" %}
+package:
+  name: baguet
+  version: {{ version }}
+
+source:
+  path: ..
+
+build:
+  number: 0
+  script: python "{{ RECIPE_DIR }}/build.py"
+
+requirements:
+  build:
+    - python >=3.10
+    - pip
+    - setuptools >=68
+    - wheel
+  host:
+    - python >=3.10
+    - numpy >=1.24
+    - cryptography >=41
+    - zlib
+  run:
+    - python >=3.10
+    - numpy >=1.24
+    - cryptography >=41
+
+about:
+  home: https://baguet.soilore.com
+  doc_url: https://baguet.soilore.com/legal/guide
+  license: LicenseRef-Baguet-EULA-1.0
+  summary: BAGUET 1.0 — Algebraic Lossless Memory Engine & Zero-Decompression Compute SDK
